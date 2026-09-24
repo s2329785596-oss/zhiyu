@@ -1323,3 +1323,74 @@ input:checked + .slider:before {
 .onboarding-container .brand-slogan {
   text-shadow: 0 1px 4px rgba(0,0,0,.04);
 }
+
+/* ========== 个人资料页 - 强制修复重叠 ========== */
+#page-profile .page-content {
+  padding: 24px !important;
+  padding-bottom: 120px !important;
+}
+
+#page-profile .form-group {
+  display: block !important;
+  margin-bottom: 28px !important;
+  clear: both !important;
+}
+
+#page-profile .form-group label {
+  display: block !important;
+  margin-bottom: 10px !important;
+  font-size: 14px !important;
+  color: #6B6560 !important;
+  font-weight: 500 !important;
+}
+
+#page-profile .form-group input[type="text"],
+#page-profile .form-group input[type="date"] {
+  display: block !important;
+  width: 100% !important;
+  height: 48px !important;
+  padding: 0 16px !important;
+  border: 1px solid #E0DAD0 !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+#page-profile .gender-select {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 8px !important;
+}
+
+#page-profile .gender-btn {
+  flex: 1 !important;
+  height: 52px !important;
+  border: 2px solid #E0DAD0 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  font-size: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+#page-profile .btn-primary {
+  position: fixed !important;
+  bottom: 40px !important;
+  left: 24px !important;
+  right: 24px !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+#page-profile .hint-text {
+  display: block !important;
+  font-size: 12px !important;
+  color: #A8A094 !important;
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+}
