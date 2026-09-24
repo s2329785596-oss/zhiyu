@@ -210,7 +210,8 @@ function initGenderPage() {
   const gender = userProfile ? userProfile.gender : selectedGender;
   const isMale = gender === 'male';
   
-  document.getElementById('greeting-avatar').textContent = isMale ? '🧑' : '👩';
+  const ga = document.getElementById('greeting-avatar');
+  ga.innerHTML = '<img src="' + (isMale ? 'images/avatars/yuchuan.png' : 'images/avatars/zhinuan.png') + '" style="width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 4px 16px rgba(0,0,0,.1)">';
   document.getElementById('greeting-name').textContent = isMale ? '屿川' : '知暖';
   document.getElementById('greeting-text').textContent = isMale ?
     '嘿，兄弟。我是屿川。拉你进个小群，就咱仨——感情上的事儿想吐槽、想问招，随时开口。' :
@@ -798,14 +799,53 @@ function useTool(toolId) {
     icebreaker: '破冰开场', expression: '表达灵感', imagemakeover: '形象改造',
     quickreply: '秒回急救', mindreader: '心思解码', dateplanner: '约会策划',
     giftadvisor: '送礼参谋', checkup: '关系体检', chataid: '聊天急救',
-    coach: '成长教练', breakuprescue: '分手挽回'
+    coach: '成长教练', breakuprescue: '分手挽回',
+    chatanalysis: '聊天记录分析'
   };
   
   document.getElementById('tool-title').textContent = toolNames[toolId] || '工具';
   document.getElementById('tool-welcome').textContent = TOOL_WELCOME[toolId] || '说说你的情况，我来帮你。';
   document.getElementById('tool-messages').innerHTML = '';
   
+  if (toolId === 'chatanalysis') {
+    showChatAnalysisIntro();
+  }
+  
   showPage('tool');
+}
+
+// 聊天记录分析：说明 + 导出教程
+function showChatAnalysisIntro() {
+  const box = document.getElementById('tool-messages');
+  box.innerHTML =
+    '<div class="ca-card ca-what">' +
+      '<div class="ca-card-title">💬 这是什么？</div>' +
+      '<div class="ca-card-body">把你和 TA 的整段聊天发我，我帮你看：对方话里的情绪、对你的态度、关系卡在哪，以及下一步怎么接。比你一条条截图问看得更全。</div>' +
+    '</div>' +
+    '<div class="ca-card ca-how">' +
+      '<div class="ca-card-title">📲 怎么导出聊天记录</div>' +
+      '<div class="ca-step"><span class="ca-no">1</span><span>打开微信，进入你和 TA 的聊天界面</span></div>' +
+      '<div class="ca-step"><span class="ca-no">2</span><span>长按任意一条消息，点「多选」</span></div>' +
+      '<div class="ca-step"><span class="ca-no">3</span><span>勾选想分析的消息（可点「全选」）</span></div>' +
+      '<div class="ca-step"><span class="ca-no">4</span><span>点转发图标，选「合并转发」发给「文件传输助手」</span></div>' +
+      '<div class="ca-step"><span class="ca-no">5</span><span>打开那个合并记录，点右上角「···」选「转为文本」或直接复制</span></div>' +
+      '<div class="ca-tip">小提示：不方便转文本的话，直接截图也行，点右下角「+」上传图片给我。</div>' +
+      '<button class="ca-go" onclick="readyPasteChat()">我复制好了，去发送</button>' +
+    '</div>';
+}
+
+function readyPasteChat() {
+  const input = document.getElementById('tool-input') || document.getElementById('chat-input');
+  // 切回主聊天页让用户粘贴
+  showPage('chat');
+  const ci = document.getElementById('chat-input');
+  ci.placeholder = '粘贴聊天记录，发给我...';
+  ci.focus();
+  const isFemale = chatState.isFemale;
+  const sp = isFemale ? SPEAKERS.zhinuan : SPEAKERS.yuchuan;
+  const container = document.getElementById('chat-messages');
+  container.innerHTML += renderMessageHtml('ai', '粘过来吧，长点也没事，我看完跟你说对方到底啥意思～', sp.name, sp.avatarUrl, false);
+  scrollChatBottom();
 }
 
 function handleToolKey(e) {

@@ -1394,3 +1394,98 @@ input:checked + .slider:before {
   margin-top: 8px !important;
   margin-bottom: 0 !important;
 }
+
+/* ========== 聊天记录分析卡片 ========== */
+.tool-messages { padding-bottom: 20px; }
+
+.ca-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+.ca-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2C2925;
+  margin-bottom: 12px;
+}
+.ca-card-body {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #5A544C;
+}
+.ca-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14.5px;
+  color: #4A453D;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.ca-no {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #5B6F82;
+  color: #fff;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+.ca-tip {
+  font-size: 13px;
+  color: #8A8275;
+  background: #F6F3EE;
+  border-radius: 10px;
+  padding: 11px 13px;
+  line-height: 1.6;
+  margin: 14px 0 16px;
+}
+.ca-go {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 24px;
+  background: #2C2925;
+  color: #fff;
+  font-size: 15.5px;
+  letter-spacing: 1px;
+}
+.ca-go:active { opacity: .85; }
+
+/* ========== 性别页头像区优化 ========== */
+.greeting-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 36px;
+}
+.greeting-avatar {
+  line-height: 0;
+}
+.greeting-bubble {
+  background: #fff;
+  border-radius: 4px 18px 18px 18px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  max-width: 86%;
+  align-self: flex-start;
+  margin-left: 4px;
+}
+.bubble-name {
+  font-size: 13px;
+  color: #A8A094;
+  margin-bottom: 6px;
+}
+#greeting-text {
+  font-size: 15.5px;
+  color: #3D3830;
+  line-height: 1.5;
+}
