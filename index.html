@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>知隅</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Onboarding -->
+    <div id="page-onboarding" class="page hidden">
+      <div class="onboarding-container">
+        <div class="brand-block">
+          <div class="brand-logo">知隅</div>
+          <div class="brand-slogan">在安静的角落里，读懂自己</div>
+        </div>
+        <button class="btn-primary" onclick="startOnboarding()">开始</button>
+      </div>
+    </div>
+        <div class="feature-list">
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-body">
+              <div class="feature-title">80题深度测评</div>
+              <div class="feature-desc">8维度画像，看清你的沟通与依恋模式</div>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-body">
+              <div class="feature-title">专属定制建议</div>
+              <div class="feature-desc">每条建议都是为你定制的，不是通用模板</div>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌱</div>
+            <div class="feature-body">
+              <div class="feature-title">越用越懂你</div>
+              <div class="feature-desc">建议越来越精准，像真正的老朋友</div>
+            </div>
+          </div>
+        </div>
+        <div class="promise-list">
+          <div class="promise-item"><span class="promise-icon">❌</span><span>绝不教PUA或操控他人</span></div>
+          <div class="promise-item"><span class="promise-icon">✅</span><span>引导平等尊重的健康关系</span></div>
+          <div class="promise-item"><span class="promise-icon">🔒</span><span>你的隐私绝对安全</span></div>
+        </div>
+        <button class="btn-primary" onclick="startOnboarding()">开始</button>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div id="page-profile" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">个人资料</div>
+      </div>
+      <div class="page-content">
+        <div class="form-group">
+          <label>昵称（选填）</label>
+          <input type="text" id="profile-nickname" placeholder="怎么称呼你">
+        </div>
+        <div class="form-group">
+          <label>性别（必填）</label>
+          <div class="gender-select">
+            <button class="gender-btn male" onclick="selectGender('male')">🧑 男生</button>
+            <button class="gender-btn female" onclick="selectGender('female')">👩 女生</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>生日（必填）</label>
+          <input type="date" id="profile-birthdate" onchange="calcAgeZodiac()">
+          <div id="age-zodiac" class="hint-text"></div>
+        </div>
+        <div class="form-group">
+          <label>情感状态（选填）</label>
+          <input type="text" id="profile-status" placeholder="单身/暧昧中/恋爱中...">
+        </div>
+        <div class="form-group">
+          <label>当下需求（选填）</label>
+          <input type="text" id="profile-need" placeholder="想脱单/想改善关系...">
+        </div>
+        <button class="btn-primary" onclick="submitProfile()">下一步</button>
+      </div>
+    </div>
+
+    <!-- Gender Select -->
+    <div id="page-gender" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">选择身份</div>
+      </div>
+      <div class="page-content">
+        <div class="greeting-area">
+          <div class="greeting-avatar" id="greeting-avatar">🧑</div>
+          <div class="greeting-bubble">
+            <div class="bubble-name" id="greeting-name">屿川</div>
+            <div id="greeting-text">嘿，兄弟。我是屿川。</div>
+          </div>
+        </div>
+        <div class="speed-options">
+          <div class="speed-card" onclick="selectSpeed('fast')">
+            <div class="speed-badge">推荐</div>
+            <div class="speed-header">⚡ 快点了解你</div>
+            <div class="speed-desc">通过人格分析系统，快速生成专属陪伴方案</div>
+          </div>
+          <div class="speed-card" onclick="selectSpeed('slow')">
+            <div class="speed-header">🌱 慢慢了解你</div>
+            <div class="speed-desc">在日常聊天中慢慢读懂你的性格</div>
+          </div>
+        </div>
+        <button class="btn-primary" id="speed-confirm" onclick="confirmSpeed()">选择一个方式</button>
+      </div>
+    </div>
+
+    <!-- Assessment -->
+    <div id="page-assessment" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">性格测评</div>
+      </div>
+      <div class="page-content">
+        <div id="assess-intro" class="assess-intro">
+          <h2>80题深度测评</h2>
+          <p>8个维度，千人千面</p>
+          <p>每题有A/B/C/D四个选项，也可选E写自己的想法</p>
+          <button class="btn-primary" onclick="startAssessment()">开始测评</button>
+        </div>
+        <div id="assess-quiz" class="hidden">
+          <div class="progress-bar">
+            <div class="progress-fill" id="assess-progress"></div>
+          </div>
+          <div class="assess-question" id="assess-question"></div>
+          <div class="assess-options" id="assess-options"></div>
+        </div>
+        <div id="assess-done" class="hidden">
+          <h2>测评完成！</h2>
+          <p>正在生成你的专属报告...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div id="page-chat" class="page hidden">
+      <div class="chat-header">
+        <button class="icon-btn" onclick="toggleDrawer()">☰</button>
+        <div class="chat-title">
+          <div class="group-name">知隅陪伴群</div>
+          <div class="group-members" id="chat-members">屿川·知暖 都在</div>
+        </div>
+        <button class="icon-btn" onclick="toggleHistory()">🕐</button>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-area">
+        <button class="plus-btn" onclick="toggleMoreMenu(event)">+</button>
+        <input type="text" id="chat-input" placeholder="说说你的事..." onkeypress="handleChatKey(event)">
+        <button class="send-btn" onclick="sendMessage()">发送</button>
+      </div>
+      <div class="more-menu hidden" id="more-menu">
+        <div class="menu-item" onclick="inviteGuest()">
+          <span class="menu-icon">@</span>
+          <span class="menu-text">邀请嘉宾</span>
+          <span class="menu-desc">听听另一位怎么说</span>
+        </div>
+        <div class="menu-item" onclick="importChatHistory()">
+          <span class="menu-icon">📋</span>
+          <span class="menu-text">导入聊天记录</span>
+          <span class="menu-desc">分析整段对话</span>
+        </div>
+        <div class="menu-item" onclick="uploadImage()">
+          <span class="menu-icon">🖼️</span>
+          <span class="menu-text">上传聊天截图</span>
+          <span class="menu-desc">截图直接分析</span>
+        </div>
+      </div>
+      <!-- Left Drawer -->
+      <div class="drawer left-drawer" id="left-drawer">
+        <div class="drawer-header">
+          <div class="drawer-nickname" id="drawer-nickname">知隅用户</div>
+        </div>
+        <div class="drawer-menu">
+          <div class="drawer-item" onclick="goTo('procenter')">👤 个人中心</div>
+          <div class="drawer-item" onclick="goTo('member')">💎 会员中心</div>
+          <div class="drawer-item" onclick="goTo('settings')">⚙️ 设置</div>
+          <div class="drawer-item" onclick="goTo('about')">ℹ️ 关于知隅</div>
+        </div>
+        <div class="drawer-tools">
+          <div class="tools-title">快捷工具</div>
+          <div class="tool-item" onclick="useTool('icebreaker')">🌱 破冰开场</div>
+          <div class="tool-item" onclick="useTool('expression')">💌 表达灵感</div>
+          <div class="tool-item" onclick="useTool('mindreader')">🔍 心思解码</div>
+          <div class="tool-item" onclick="useTool('dateplanner')">📍 约会策划</div>
+          <div class="tool-item" onclick="useTool('breakuprescue')">🧩 分手挽回</div>
+        </div>
+      </div>
+      <!-- Right Drawer (History) -->
+      <div class="drawer right-drawer" id="right-drawer">
+        <div class="drawer-header">
+          <div class="drawer-title">聊天记录</div>
+        </div>
+        <div class="history-list" id="history-list"></div>
+      </div>
+      <div class="drawer-mask" id="drawer-mask" onclick="closeDrawers()"></div>
+    </div>
+
+    <!-- Tool Page -->
+    <div id="page-tool" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title" id="tool-title">工具</div>
+      </div>
+      <div class="page-content">
+        <div class="tool-welcome" id="tool-welcome"></div>
+        <div class="tool-messages" id="tool-messages"></div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="tool-input" placeholder="说说你的情况..." onkeypress="handleToolKey(event)">
+        <button class="send-btn" onclick="sendToolMessage()">发送</button>
+      </div>
+    </div>
+
+    <!-- Procenter -->
+    <div id="page-procenter" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goTo('chat')">←</button>
+        <div class="nav-title">个人中心</div>
+      </div>
+      <div class="page-content">
+        <div class="user-card">
+          <div class="user-avatar" id="pc-avatar">知</div>
+          <div class="user-info">
+            <div class="user-nickname" id="pc-nickname">知隅用户</div>
+            <div class="user-status" id="pc-status">免费用户</div>
+          </div>
+        </div>
+        <div class="menu-group">
+          <div class="menu-title">我的</div>
+          <div class="menu-item" onclick="editProfile()">👤 我的资料 →</div>
+          <div class="menu-item" onclick="viewAssessment()">📊 我的测评 →</div>
+          <div class="menu-item" onclick="viewReport()">📄 我的报告 →</div>
+        </div>
+        <div class="menu-group">
+          <div class="menu-title">会员</div>
+          <div class="menu-item" onclick="goTo('member')">💎 会员中心 →</div>
+        </div>
+        <div class="menu-group">
+          <div class="menu-title">其他</div>
+          <div class="menu-item" onclick="goTo('settings')">⚙️ 设置 →</div>
+          <div class="menu-item" onclick="goTo('about')">ℹ️ 关于知隅 →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member -->
+    <div id="page-member" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">会员中心</div>
+      </div>
+      <div class="page-content">
+        <div class="member-status" id="member-status">
+          <div class="status-phase" id="member-phase">试用期</div>
+          <div class="status-days" id="member-days">剩余30天</div>
+        </div>
+        <div class="benefits-list">
+          <div class="benefit-item">✓ 13个沟通陪伴工具全部可用</div>
+          <div class="benefit-item">✓ 不限次数与屿川、知暖对话</div>
+          <div class="benefit-item">✓ 千人千面测评与深度分析报告</div>
+          <div class="benefit-item">✓ 关系体检、成长教练长期陪伴</div>
+        </div>
+        <div class="plans-list">
+          <div class="plan-card" onclick="selectPlan('second')">
+            <div class="plan-name">第2月特惠</div>
+            <div class="plan-price">¥9.9</div>
+            <div class="plan-note">试用后首月</div>
+          </div>
+          <div class="plan-card" onclick="selectPlan('month')">
+            <div class="plan-name">月卡</div>
+            <div class="plan-price">¥29.9</div>
+            <div class="plan-note">每月续费</div>
+          </div>
+          <div class="plan-card recommended" onclick="selectPlan('quarter')">
+            <div class="plan-tag">推荐</div>
+            <div class="plan-name">季卡</div>
+            <div class="plan-price">¥68</div>
+            <div class="plan-note">约22.7元/月</div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="payMember()">开通会员</button>
+        <div class="redeem-section">
+          <input type="text" id="redeem-code" placeholder="输入兑换码">
+          <button onclick="redeemCode()">兑换</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="page-settings" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">设置</div>
+      </div>
+      <div class="page-content">
+        <div class="menu-group">
+          <div class="menu-title">场景设置</div>
+          <div class="setting-item">
+            <span>动态陪伴</span>
+            <label class="switch">
+              <input type="checkbox" id="setting-scene" checked onchange="toggleScene()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <span>陀螺仪视差</span>
+            <label class="switch">
+              <input type="checkbox" id="setting-gyro" checked onchange="toggleGyro()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="menu-group">
+          <div class="menu-title">数据管理</div>
+          <div class="menu-item" onclick="clearChatHistory()">🗑️ 清除聊天记录</div>
+          <div class="menu-item" onclick="reassess()">🔄 重新测评</div>
+        </div>
+        <div class="menu-group">
+          <div class="menu-title">关于</div>
+          <div class="menu-item">📱 版本 v2.0.0</div>
+          <div class="menu-item" onclick="showUserAgreement()">📜 用户协议</div>
+          <div class="menu-item" onclick="showPrivacyPolicy()">🔒 隐私政策</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div id="page-about" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">关于知隅</div>
+      </div>
+      <div class="page-content">
+        <div class="about-logo">知隅</div>
+        <div class="about-version">v2.0.0</div>
+        <div class="about-desc">
+          <p>知隅是一款AI情感成长陪伴应用。</p>
+          <p>在「知隅陪伴群」里，你有两位朋友：</p>
+          <p>男生有兄弟「屿川」和女生朋友「知暖」</p>
+          <p>女生有闺蜜「知暖」和男生朋友「屿川」</p>
+          <p>两位都是朋友，不教套路、不玩操控</p>
+          <p>只陪你把感情这道题想明白。</p>
+        </div>
+        <div class="about-slogan">愿你在爱的路上，不再迷路。</div>
+      </div>
+    </div>
+
+    <!-- Report -->
+    <div id="page-report" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">测评报告</div>
+      </div>
+      <div class="page-content">
+        <div id="report-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-buttons">
+        <button class="modal-btn cancel" id="modal-cancel" onclick="closeModal()">取消</button>
+        <button class="modal-btn confirm" id="modal-confirm" onclick="confirmModal()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/wx-shim.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
