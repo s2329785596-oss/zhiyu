@@ -211,7 +211,8 @@ function initGenderPage() {
   const isMale = gender === 'male';
   
   const ga = document.getElementById('greeting-avatar');
-  ga.innerHTML = '<img src="' + (isMale ? 'images/avatars/yuchuan.png' : 'images/avatars/zhinuan.png') + '" style="width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 4px 16px rgba(0,0,0,.1)">';
+  const _avUrl = isMale ? 'images/avatars/yuchuan.png' : 'images/avatars/zhinuan.png';
+  ga.innerHTML = '<img class="ga-img" src="' + _avUrl + '?v=2" alt="">';
   document.getElementById('greeting-name').textContent = isMale ? '屿川' : '知暖';
   document.getElementById('greeting-text').textContent = isMale ?
     '嘿，兄弟。我是屿川。拉你进个小群，就咱仨——感情上的事儿想吐槽、想问招，随时开口。' :

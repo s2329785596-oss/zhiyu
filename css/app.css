@@ -1717,3 +1717,125 @@ input:focus, textarea:focus {
 /* 滚动条更细更柔 */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: rgba(140,120,90,.25); border-radius: 2px; }
+
+/* ============================================================
+   v2.4 开场页重制
+   ============================================================ */
+#page-onboarding {
+  background:
+    radial-gradient(120% 80% at 50% 0%, #EDE8FB 0%, #F4F1F8 38%, #F7F4EE 72%, #F1ECE3 100%) !important;
+  overflow: hidden;
+}
+.onboarding-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+}
+
+/* 背景装饰光斑 */
+.ob-decor {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(8px);
+  pointer-events: none;
+}
+.ob-decor-1 {
+  width: 220px; height: 220px;
+  top: -60px; right: -70px;
+  background: radial-gradient(circle, rgba(150,130,240,.28), transparent 70%);
+}
+.ob-decor-2 {
+  width: 180px; height: 180px;
+  bottom: 40px; left: -70px;
+  background: radial-gradient(circle, rgba(240,200,170,.32), transparent 70%);
+}
+.ob-decor-3 {
+  width: 10px; height: 10px;
+  top: 22%; left: 22%;
+  background: rgba(160,140,230,.5);
+  box-shadow:
+    120px 60px 0 -3px rgba(200,180,240,.45),
+    -80px 140px 0 -2px rgba(230,200,170,.5),
+    160px 200px 0 -4px rgba(180,160,235,.4);
+}
+
+/* Logo */
+.ob-logo-wrap {
+  position: relative;
+  margin-bottom: 30px;
+  animation: obFloat 4s ease-in-out infinite;
+}
+@keyframes obFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.ob-logo-shadow {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 18px;
+  background: radial-gradient(ellipse, rgba(110,90,180,.22), transparent 70%);
+  filter: blur(4px);
+}
+.ob-logo {
+  width: 132px;
+  height: 132px;
+  border-radius: 32px;
+  display: block;
+  box-shadow:
+    0 20px 44px rgba(110,90,190,.32),
+    0 6px 16px rgba(110,90,190,.22),
+    inset 0 1px 1px rgba(255,255,255,.4);
+}
+
+/* 品牌字 */
+.ob-word {
+  font-family: "Noto Serif CJK SC", "Songti SC", serif;
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: 12px;
+  text-indent: 12px;
+  color: #322E42;
+  margin-bottom: 14px;
+}
+.ob-slogan {
+  font-size: 15px;
+  letter-spacing: 2.5px;
+  color: #8B83A0;
+  margin-bottom: 64px;
+}
+
+/* 开始按钮 */
+.ob-start {
+  width: 210px;
+  height: 54px;
+  border: none;
+  border-radius: 27px;
+  background: linear-gradient(135deg, #4A4360 0%, #6B5FA0 100%);
+  color: #fff;
+  font-size: 17px;
+  letter-spacing: 6px;
+  text-indent: 6px;
+  box-shadow: 0 12px 28px rgba(100,85,170,.36);
+}
+.ob-start:active {
+  transform: translateY(2px);
+  box-shadow: 0 6px 16px rgba(100,85,170,.3);
+}
+
+/* 性别页真实头像 */
+.ga-img {
+  width: 110px !important;
+  height: 110px !important;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 8px 24px rgba(110,90,180,.22), 0 2px 8px rgba(0,0,0,.06);
+  border: 3px solid #fff;
+}
+.greeting-avatar { line-height: 0; }
