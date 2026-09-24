@@ -1098,7 +1098,7 @@ input:checked + .slider:before {
   align-items: flex-start;
 }
 .message.ai { flex-direction: row; justify-content: flex-start; }
-.message.user { flex-direction: row-reverse; justify-content: flex-end; }
+.message.user { flex-direction: row-reverse; justify-content: flex-start; }
 
 .message-avatar {
   width: 42px !important;
@@ -1839,3 +1839,15 @@ input:focus, textarea:focus {
   border: 3px solid #fff;
 }
 .greeting-avatar { line-height: 0; }
+
+/* 用户头像里的图片填满圆框 */
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+#pc-avatar.user-avatar { overflow: hidden; padding: 0; background: #E7E2D8; }
+#duc-avatar { overflow: hidden; }
+#duc-avatar .user-avatar-img { border-radius: 0; }

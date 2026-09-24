@@ -463,9 +463,8 @@ function initChatPage() {
   
   document.getElementById('chat-members').textContent = chatState.mainName + '·' + chatState.guestName + ' 都在';
   document.getElementById('drawer-nickname').textContent = profile.nickname || '知隅用户';
-  // 抽屉用户头像（默认按性别显示，后续可支持用户上传）
-  const _ducAv = document.getElementById('duc-avatar');
-  if (_ducAv) _ducAv.textContent = isFemale ? '👩' : '🧑';
+  // 抽屉用户头像（默认角色图，点击可上传）
+  renderUserAvatar('duc-avatar', isFemale);
   
   // 加载消息
   renderChatMessages();
@@ -910,7 +909,7 @@ function refreshProcenter() {
   const membership = wx.getStorageSync('membership') || {};
   
   document.getElementById('pc-nickname').textContent = profile.nickname || '知隅用户';
-  document.getElementById('pc-avatar').textContent = (profile.nickname || '知').charAt(0);
+  renderUserAvatar('pc-avatar', !!(profile.gender === 'female'));
   
   let status = '免费用户';
   if (membership.isVip && membership.vipEnd > Date.now()) status = '会员用户';
@@ -1106,6 +1105,61 @@ function uploadImage() {
       setTimeout(function() {
         appendAiTip('图我收到了！图片自动识别还在接入中，你可以先用嘴跟我说说：这是你俩的聊天截图不？你最想让我帮你看哪块？');
       }, 400);
+    };
+    reader.readAsDataURL(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  document.body.removeChild(input);
+}
+
+// ============ 用户头像：默认按性别显示角色图，点击可上传自定义 ============
+function getDefaultUserAvatar(isFemale) {
+  return isFemale ? 'images/avatars/zhinuan.png' : 'images/avatars/yuchuan.png';
+}
+
+function renderUserAvatar(elId, isFemale) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const custom = wx.getStorageSync('userAvatar');
+  const url = custom || getDefaultUserAvatar(isFemale);
+  el.innerHTML = '<img src="' + url + (custom ? '' : '?v=2') + '" alt="头像" class="user-avatar-img">';
+  el.style.cursor = 'pointer';
+  el.onclick = function() { pickUserAvatar(elId, isFemale); };
+}
+
+function pickUserAvatar(elId, isFemale) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.style.display = 'none';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      // 压缩到 256px 避免 localStorage 爆掉
+      const img = new Image();
+      img.onload = function() {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        // 居中裁剪成正方形
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        const data = canvas.toDataURL('image/jpeg', 0.85);
+        try {
+          wx.setStorageSync('userAvatar', data);
+        } catch (err) {
+          alert('图片太大存不下，换一张试试');
+          return;
+        }
+        renderUserAvatar('duc-avatar', isFemale);
+        renderUserAvatar('pc-avatar', isFemale);
+      };
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   };
