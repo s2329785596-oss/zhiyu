@@ -140,23 +140,36 @@
       </div>
       <!-- Left Drawer -->
       <div class="drawer left-drawer" id="left-drawer">
-        <div class="drawer-header">
-          <div class="drawer-nickname" id="drawer-nickname">知隅用户</div>
+        <div class="drawer-scroll">
+          <!-- 用户卡片 -->
+          <div class="drawer-usercard" onclick="goTo('procenter')">
+            <div class="duc-avatar" id="duc-avatar">🧑</div>
+            <div class="duc-info">
+              <div class="duc-name" id="drawer-nickname">知隅用户</div>
+              <div class="duc-sub">查看个人中心 ›</div>
+            </div>
+            <div class="duc-member" onclick="event.stopPropagation();goTo('member')">💎</div>
+          </div>
+
+          <!-- 工具区 -->
+          <div class="drawer-section">
+            <div class="tools-title">全部工具</div>
+            <div class="tool-grid">
+              <div class="tg-cell" onclick="useTool('icebreaker')"><span class="tg-ico">🌱</span><span class="tg-tx">破冰开场</span></div>
+              <div class="tg-cell" onclick="useTool('expression')"><span class="tg-ico">💌</span><span class="tg-tx">表达灵感</span></div>
+              <div class="tg-cell" onclick="useTool('mindreader')"><span class="tg-ico">🔍</span><span class="tg-tx">心思解码</span></div>
+              <div class="tg-cell" onclick="useTool('dateplanner')"><span class="tg-ico">📍</span><span class="tg-tx">约会策划</span></div>
+              <div class="tg-cell" onclick="useTool('breakuprescue')"><span class="tg-ico">🧩</span><span class="tg-tx">分手挽回</span></div>
+              <div class="tg-cell" onclick="useTool('chatanalysis')"><span class="tg-ico">💬</span><span class="tg-tx">记录分析</span></div>
+            </div>
+          </div>
         </div>
-        <div class="drawer-menu">
-          <div class="drawer-item" onclick="goTo('procenter')">👤 个人中心</div>
-          <div class="drawer-item" onclick="goTo('member')">💎 会员中心</div>
-          <div class="drawer-item" onclick="goTo('settings')">⚙️ 设置</div>
-          <div class="drawer-item" onclick="goTo('about')">ℹ️ 关于知隅</div>
-        </div>
-        <div class="drawer-tools">
-          <div class="tools-title">快捷工具</div>
-          <div class="tool-item" onclick="useTool('icebreaker')">🌱 破冰开场</div>
-          <div class="tool-item" onclick="useTool('expression')">💌 表达灵感</div>
-          <div class="tool-item" onclick="useTool('mindreader')">🔍 心思解码</div>
-          <div class="tool-item" onclick="useTool('dateplanner')">📍 约会策划</div>
-          <div class="tool-item" onclick="useTool('breakuprescue')">🧩 分手挽回</div>
-          <div class="tool-item" onclick="useTool('chatanalysis')">💬 聊天记录分析</div>
+
+        <!-- 底部：设置 / 关于 -->
+        <div class="drawer-footer">
+          <div class="df-item" onclick="goTo('settings')"><span>⚙️</span> 设置</div>
+          <div class="df-sep"></div>
+          <div class="df-item" onclick="goTo('about')"><span>ℹ️</span> 关于知隅</div>
         </div>
       </div>
       <!-- Right Drawer (History) -->

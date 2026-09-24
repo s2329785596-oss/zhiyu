@@ -462,6 +462,9 @@ function initChatPage() {
   
   document.getElementById('chat-members').textContent = chatState.mainName + '·' + chatState.guestName + ' 都在';
   document.getElementById('drawer-nickname').textContent = profile.nickname || '知隅用户';
+  // 抽屉用户头像（默认按性别显示，后续可支持用户上传）
+  const _ducAv = document.getElementById('duc-avatar');
+  if (_ducAv) _ducAv.textContent = isFemale ? '👩' : '🧑';
   
   // 加载消息
   renderChatMessages();
