@@ -158,14 +158,28 @@
 
           <!-- 工具区 -->
           <div class="drawer-section">
-            <div class="tools-title">全部工具</div>
+            <div class="tools-title">聊天帮手</div>
             <div class="tool-grid">
               <div class="tg-cell" onclick="useTool('icebreaker')"><span class="tg-ico">🌱</span><span class="tg-tx">破冰开场</span></div>
-              <div class="tg-cell" onclick="useTool('expression')"><span class="tg-ico">💌</span><span class="tg-tx">表达灵感</span></div>
+              <div class="tg-cell" onclick="useTool('expression')"><span class="tg-ico">💌</span><span class="tg-tx">心意转译</span></div>
               <div class="tg-cell" onclick="useTool('mindreader')"><span class="tg-ico">🔍</span><span class="tg-tx">心思解码</span></div>
+              <div class="tg-cell" onclick="useTool('chatanalysis')"><span class="tg-ico">💬</span><span class="tg-tx">聊天解读</span></div>
+            </div>
+          </div>
+
+          <div class="drawer-section">
+            <div class="tools-title">关系行动</div>
+            <div class="tool-grid">
               <div class="tg-cell" onclick="useTool('dateplanner')"><span class="tg-ico">📍</span><span class="tg-tx">约会策划</span></div>
               <div class="tg-cell" onclick="useTool('breakuprescue')"><span class="tg-ico">🧩</span><span class="tg-tx">分手挽回</span></div>
-              <div class="tg-cell" onclick="useTool('chatanalysis')"><span class="tg-ico">💬</span><span class="tg-tx">记录分析</span></div>
+            </div>
+          </div>
+
+          <div class="drawer-section">
+            <div class="tools-title">用心经营</div>
+            <div class="tool-grid">
+              <div class="tg-cell" onclick="openStyle()"><span class="tg-ico">👗</span><span class="tg-tx">形象穿搭</span></div>
+              <div class="tg-cell" onclick="openLoved()"><span class="tg-ico">💖</span><span class="tg-tx">在乎的人</span></div>
             </div>
           </div>
         </div>
@@ -337,6 +351,42 @@
       </div>
     </div>
 
+    <!-- 在乎的人 · 列表 -->
+    <div id="page-loved" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">在乎的人</div>
+      </div>
+      <div class="page-content" id="loved-list-wrap"></div>
+    </div>
+
+    <!-- 在乎的人 · 详情 -->
+    <div id="page-loved-detail" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title" id="loved-detail-title">TA的小本本</div>
+      </div>
+      <div class="page-content" id="loved-detail-wrap"></div>
+    </div>
+
+    <!-- 形象穿搭 · 档案列表 -->
+    <div id="page-style" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title">形象穿搭</div>
+      </div>
+      <div class="page-content" id="style-list-wrap"></div>
+    </div>
+
+    <!-- 形象穿搭 · 编辑/建议 -->
+    <div id="page-style-detail" class="page hidden">
+      <div class="nav-bar">
+        <button class="nav-back" onclick="goBack()">←</button>
+        <div class="nav-title" id="style-detail-title">穿搭档案</div>
+      </div>
+      <div class="page-content" id="style-detail-wrap"></div>
+    </div>
+
     <!-- Report -->
     <div id="page-report" class="page hidden">
       <div class="nav-bar">
@@ -368,5 +418,6 @@
   <script src="js/storage.js"></script>
   <script src="js/questions.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/features.js"></script>
 </body>
 </html>

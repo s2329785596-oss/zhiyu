@@ -827,11 +827,11 @@ function useTool(toolId) {
   currentToolId = toolId;
   
   const toolNames = {
-    icebreaker: '破冰开场', expression: '表达灵感', imagemakeover: '形象改造',
+    icebreaker: '破冰开场', expression: '心意转译', imagemakeover: '形象改造',
     quickreply: '秒回急救', mindreader: '心思解码', dateplanner: '约会策划',
     giftadvisor: '送礼参谋', checkup: '关系体检', chataid: '聊天急救',
     coach: '成长教练', breakuprescue: '分手挽回',
-    chatanalysis: '聊天记录分析'
+    chatanalysis: '聊天解读'
   };
   
   document.getElementById('tool-title').textContent = toolNames[toolId] || '工具';
@@ -840,9 +840,12 @@ function useTool(toolId) {
   
   if (toolId === 'chatanalysis') {
     showChatAnalysisIntro();
+  } else if (typeof renderToolLanding === 'function') {
+    renderToolLanding(toolId);
   }
   
   showPage('tool');
+  var _tc = document.querySelector('#page-tool .page-content'); if (_tc) _tc.scrollTop = 0;
 }
 
 // 聊天记录分析：说明 + 导出教程
@@ -905,11 +908,11 @@ async function sendToolMessage() {
       body: JSON.stringify({
         model: 'glm-4-flash',
         messages: [
-          { role: 'system', content: '你是知隅的沟通陪伴助手，定位是亲密关系沟通参考工具。回复要具体、实用、口语化，150字以内。' },
+          { role: 'system', content: (typeof getToolSystemPrompt === 'function' ? getToolSystemPrompt(currentToolId) : '你是知隅的沟通陪伴助手，定位是亲密关系沟通参考工具。回复具体、实用、口语化。') },
           { role: 'user', content: text }
         ],
         temperature: 0.8,
-        max_tokens: 500
+        max_tokens: 700
       })
     });
     
@@ -923,8 +926,8 @@ async function sendToolMessage() {
       reply = '我想了想，建议你直接真诚地表达你的想法，这比任何话术都有效。';
     }
     
-    container.innerHTML += '<div class="message ai"><div class="message-bubble">' + escapeHtml(reply) + '</div></div>';
-    container.scrollTop = container.scrollHeight;
+    container.innerHTML += '<div class="message ai"><div class="message-bubble">' + escapeHtml(reply).replace(/\n/g, '<br>') + '</div></div>';
+    var _pc = document.querySelector('#page-tool .page-content'); if (_pc) _pc.scrollTop = _pc.scrollHeight;
   } catch(e) {
     document.getElementById('tool-typing')?.remove();
     container.innerHTML += '<div class="message ai"><div class="message-bubble">网络有点问题，稍后再试~</div></div>';
