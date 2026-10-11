@@ -515,7 +515,14 @@ function renderChatMessages() {
   
   history.forEach(h => {
     if (h.role === 'user') {
-      html += '<div class="message user"><div class="message-bubble">' + escapeHtml(h.content) + '</div></div>';
+      var userBubble = '';
+      if (h.image) {
+        userBubble += '<img class="uploaded-shot" src="' + h.image + '">';
+        if (h.content && h.content !== '[图片]') userBubble += '<div class="msg-img-caption">' + escapeHtml(h.content) + '</div>';
+      } else {
+        userBubble += escapeHtml(h.content);
+      }
+      html += '<div class="message user"><div class="message-bubble">' + userBubble + '</div></div>';
       lastSpeaker = 'user';
     } else if (h.type === 'system') {
       html += '<div style="text-align:center;color:#969088;padding:8px;font-size:12px">' + escapeHtml(h.content) + '</div>';
@@ -593,22 +600,12 @@ function removeTypingIndicator() {
   if (el) el.remove();
 }
 
-async function callAI(userText) {
-  chatState.aiTyping = true;
-  showTypingIndicator();
-  
+// 主聊角色系统提示词；hasImage=true 时追加看图分析要求
+function buildMainSystemPrompt(hasImage) {
   const profile = wx.getStorageSync('userProfile') || {};
   const isFemale = chatState.isFemale;
-  const mainSpeaker = isFemale ? 'zhinuan' : 'yuchuan';
   const mainName = isFemale ? '知暖' : '屿川';
-  
-  // 构建AI prompt
-  const history = chatStorage.getHistory(10);
-  const historyText = history.slice(-8).map(h => 
-    (h.role === 'user' ? '用户' : mainName) + '：' + h.content
-  ).join('\n');
-  
-  const systemPrompt = '你是「知隅」里的' + mainName + '，是用户的' + (isFemale ? '闺蜜' : '兄弟') + '。\n' +
+  let p = '你是「知隅」里的' + mainName + '，是用户的' + (isFemale ? '闺蜜' : '兄弟') + '。\n' +
     '定位：亲密关系沟通参考工具。\n' +
     '\n' +
     '【铁律，每条回复必须照做】\n' +
@@ -622,11 +619,38 @@ async function callAI(userText) {
     '5. 每次回复40到100字，不许长篇大论，不许用序号分点\n' +
     '6. 反对PUA/操控/物化，引导平等健康的关系\n' +
     '7. 没把握的事说"可能""我猜"，不把话说死\n' +
-    (profile.dimensions ? '8. 这用户的性格特征：' + JSON.stringify(profile.dimensions) + '\n' : '') +
-    '\n直接输出聊天内容，不要解释你在做什么。';
-  
+    (profile.dimensions ? '8. 这用户的性格特征：' + JSON.stringify(profile.dimensions) + '\n' : '');
+  if (hasImage) {
+    p += '\n【本次用户发来了一张图片，多半是聊天截图/朋友圈/对方资料】\n' +
+      '仔细看清图里的文字、对话顺序、时间和语气，再开口。像朋友凑过来一起看手机那样，' +
+      '先点出你看到的关键信号，接住情绪，问一个最关键的摸底问题，给一个明确立场。' +
+      '看不清或图里信息不够，就老实说哪看不清、让用户补一张或讲讲，别瞎编图里没有的内容。\n';
+  }
+  p += '\n直接输出聊天内容，不要解释你在做什么。';
+  return p;
+}
+
+async function callAI(userText, imageDataUrl) {
+  chatState.aiTyping = true;
+  showTypingIndicator();
+
+  const hasImage = !!imageDataUrl;
+  const systemPrompt = buildMainSystemPrompt(hasImage);
+
+  // 有图走视觉模型 glm-4v-flash（免费），纯文字走 glm-4-flash
+  let userContent;
+  let model = 'glm-4-flash';
+  if (hasImage) {
+    model = 'glm-4v-flash';
+    userContent = [
+      { type: 'text', text: userText || '帮我看看这张截图' },
+      { type: 'image_url', image_url: { url: imageDataUrl } }
+    ];
+  } else {
+    userContent = userText;
+  }
+
   try {
-    // 调用AI API
     const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
       method: 'POST',
       headers: {
@@ -634,36 +658,40 @@ async function callAI(userText) {
         'Authorization': 'Bearer ' + getApiKey()
       },
       body: JSON.stringify({
-        model: 'glm-4-flash',
+        model: model,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userText }
+          { role: 'user', content: userContent }
         ],
-        temperature: 0.8,
-        max_tokens: 500
+        temperature: 0.7,
+        max_tokens: 600
       })
     });
-    
+
     const data = await response.json();
     removeTypingIndicator();
-    
+
     let reply = '';
     if (data.choices && data.choices[0]) {
       reply = data.choices[0].message.content;
+    } else if (hasImage) {
+      reply = '图我这边一时没太读清，网络可能抖了下，你再发一次试试？不行就先用嘴跟我说说啥情况。';
     } else {
       reply = '让我想想...你说的这个情况挺常见的，能再具体说说吗？';
     }
-    
+
     chatStorage.saveMessage('assistant', reply, { speaker: 'main' });
     renderChatMessages();
   } catch(e) {
     removeTypingIndicator();
     console.error('AI调用失败:', e);
-    const reply = '抱歉，我这边暂时连不上，稍等一下再试试？';
+    const reply = hasImage
+      ? '图我这边暂时没连上，稍等再发一次？急的话你先打字跟我说说。'
+      : '抱歉，我这边暂时连不上，稍等一下再试试？';
     chatStorage.saveMessage('assistant', reply, { speaker: 'main' });
     renderChatMessages();
   }
-  
+
   chatState.aiTyping = false;
 }
 
@@ -832,7 +860,7 @@ function showChatAnalysisIntro() {
       '<div class="ca-step"><span class="ca-no">3</span><span>勾选想分析的消息（可点「全选」）</span></div>' +
       '<div class="ca-step"><span class="ca-no">4</span><span>点转发图标，选「合并转发」发给「文件传输助手」</span></div>' +
       '<div class="ca-step"><span class="ca-no">5</span><span>打开那个合并记录，点右上角「···」选「转为文本」或直接复制</span></div>' +
-      '<div class="ca-tip">小提示：不方便转文本的话，直接截图也行，点右下角「+」上传图片给我。</div>' +
+      '<div class="ca-tip">小提示：嫌转文本麻烦？直接截图，回到聊天页点右下角「+」把图发我，我能直接看图帮你分析。</div>' +
       '<button class="ca-go" onclick="readyPasteChat()">我复制好了，去发送</button>' +
     '</div>';
 }
@@ -1086,7 +1114,36 @@ function appendAiTip(text) {
   scrollChatBottom();
 }
 
-// 上传图片（占位：可选择图片，识别能力待接入）
+// 把图片文件压到指定最长边，返回 dataURL（jpeg）。用于控制请求体/本地存储体积
+function compressImageFile(file, maxEdge, quality) {
+  return new Promise(function(resolve, reject) {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = function(ev) {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = function() {
+        let w = img.width, h = img.height;
+        if (Math.max(w, h) > maxEdge) {
+          const scale = maxEdge / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// 上传图片：聊天截图/朋友圈等 → 压缩 → 入聊天记录 → 视觉AI(glm-4v-flash)分析
 function uploadImage() {
   document.getElementById('more-menu').classList.add('hidden');
   const input = document.createElement('input');
@@ -1095,18 +1152,31 @@ function uploadImage() {
   input.style.display = 'none';
   input.onchange = function(e) {
     const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      const container = document.getElementById('chat-messages');
-      container.innerHTML += '<div class="message user"><div class="message-body">' +
-        '<img class="uploaded-shot" src="' + ev.target.result + '"></div></div>';
-      scrollChatBottom();
-      setTimeout(function() {
-        appendAiTip('图我收到了！图片自动识别还在接入中，你可以先用嘴跟我说说：这是你俩的聊天截图不？你最想让我帮你看哪块？');
-      }, 400);
-    };
-    reader.readAsDataURL(file);
+    if (!file || chatState.aiTyping) return;
+    // 用户输入框里若有字，当作对这张图的补充提问
+    const ci = document.getElementById('chat-input');
+    const extraText = ci ? ci.value.trim() : '';
+    Promise.resolve()
+      .then(function() {
+        // 高清图给AI看，保证小字截图能识别
+        return compressImageFile(file, 1568, 0.82).then(function(hi) {
+          // 缩略图存进本地聊天记录，避免撑爆存储
+          return compressImageFile(file, 360, 0.7).then(function(thumb) {
+            return { hi: hi, thumb: thumb };
+          });
+        });
+      })
+      .then(function(imgs) {
+        if (ci) ci.value = '';
+        // 存记录：content 是气泡里显示的文字，image 字段存缩略图
+        chatStorage.saveMessage('user', extraText || '[图片]', { image: imgs.thumb });
+        renderChatMessages();
+        callAI(extraText || '帮我看看这张截图，说说对方到底啥意思', imgs.hi);
+      })
+      .catch(function(err) {
+        console.error('图片处理失败:', err);
+        wx.showToast({ title: '这张图没读出来，换一张试试' });
+      });
   };
   document.body.appendChild(input);
   input.click();

@@ -1143,6 +1143,12 @@ input:checked + .slider:before {
   display: block;
 }
 
+.msg-img-caption {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 /* + 按钮 */
 .plus-btn {
   width: 40px;
