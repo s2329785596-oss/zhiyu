@@ -9,6 +9,24 @@ let selectedGender = '';
 let selectedSpeed = '';
 let userProfile = null;
 
+// 全局加载提示
+function showGlobalLoading(msg) {
+  let el = document.getElementById('global-loading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'global-loading';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.6);z-index:9999;backdrop-filter:blur(3px);';
+    el.innerHTML = '<div style="background:#FFF;border-radius:14px;padding:18px 26px;box-shadow:0 6px 20px rgba(160,130,100,0.15);display:flex;align-items:center;gap:10px;font-size:15px;color:#5C4A3A;"><span class="spin"></span><span id="gl-msg">加载中...</span></div>';
+    document.body.appendChild(el);
+  }
+  document.getElementById('gl-msg').textContent = msg || '加载中...';
+  el.style.display = 'flex';
+}
+function hideGlobalLoading() {
+  const el = document.getElementById('global-loading');
+  if (el) el.style.display = 'none';
+}
+
 // 角色配置
 const SPEAKERS = {
   yuchuan: { name: '屿川', avatar: '🏔️', avatarUrl: 'images/avatars/yuchuan.png', emoji: '🏔️' },
@@ -50,6 +68,10 @@ function showPage(pageName, addToHistory = true) {
   const target = document.getElementById('page-' + pageName);
   if (target) {
     target.classList.remove('hidden');
+    // 触发淡入动画
+    target.style.animation = 'none';
+    void target.offsetHeight;
+    target.style.animation = '';
     currentPage = pageName;
   }
   
@@ -58,6 +80,12 @@ function showPage(pageName, addToHistory = true) {
   if (pageName === 'procenter') refreshProcenter();
   if (pageName === 'member') refreshMember();
   if (pageName === 'settings') refreshSettings();
+  
+  // 滚到顶部
+  setTimeout(() => {
+    const pc = target ? target.querySelector('.page-content') : null;
+    if (pc) pc.scrollTop = 0;
+  }, 30);
 }
 
 function goBack() {

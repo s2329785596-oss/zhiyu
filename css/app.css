@@ -2053,3 +2053,31 @@ input:focus, textarea:focus {
 .pull-load-more:active {
   background: rgba(91,111,130,0.05);
 }
+
+/* 页面切换动画 */
+.page {
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 加载骨架屏 */
+.skeleton {
+  background: linear-gradient(90deg, #F0ECE5 25%, #F6F3EE 50%, #F0ECE5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 全局加载旋转 */
+.spin {
+  display:inline-block;width:18px;height:18px;border:2px solid #E8DCC8;border-top-color:#C89B7A;border-radius:50%;
+  animation: spinRotate 0.8s linear infinite;
+}
+@keyframes spinRotate { to { transform: rotate(360deg); } }
