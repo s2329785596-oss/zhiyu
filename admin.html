@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>知隅 · 管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC",sans-serif;background:#F6F3EE;color:#2C2925;font-size:14px;line-height:1.6}
+.header{background:#5B6F82;color:#fff;padding:16px;text-align:center;font-size:17px;font-weight:700;position:sticky;top:0;z-index:10}
+.section{background:#fff;margin:12px;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.section-title{font-size:15px;font-weight:700;margin-bottom:12px;color:#5B6F82;display:flex;align-items:center;gap:6px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:#969088;margin-bottom:5px}
+.field input,.field textarea,.field select{width:100%;border:1px solid #ECE8E1;border-radius:10px;padding:10px;font-size:14px;outline:none;background:#FAFAF8}
+.field input:focus,.field textarea:focus{border-color:#5B6F82}
+.field textarea{resize:vertical;min-height:70px;font-family:inherit}
+.btn{width:100%;background:#5B6F82;color:#fff;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn:active{background:#4A5D70}
+.btn-danger{background:#C08577}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0ECE5}
+.toggle:last-child{border-bottom:none}
+.toggle label{font-size:14px}
+.toggle input[type=checkbox]{width:44px;height:24px;appearance:none;background:#DDD;border-radius:12px;position:relative;cursor:pointer;transition:.2s}
+.toggle input[type=checkbox]:checked{background:#5B6F82}
+.toggle input[type=checkbox]:checked::after{transform:translateX(20px)}
+.toggle input[type=checkbox]::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s}
+.avatar-upload{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.avatar-preview{width:60px;height:60px;border-radius:50%;background:#F0ECE5;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:28px}
+.avatar-preview img{width:100%;height:100%;object-fit:cover}
+.upload-btn{background:#F0ECE5;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
+.notice-preview{background:#FFF8F0;border:1px dashed #E8D5C0;border-radius:10px;padding:12px;font-size:13px;color:#8B6F50;margin-top:8px}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#5B6F82;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:100;opacity:0;transition:.3s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="header">知隅 · 管理后台</div>
+<div class="toast" id="toast">已保存</div>
+
+<!-- 基础信息 -->
+<div class="section">
+  <div class="section-title">📱 基础信息</div>
+  <div class="field">
+    <label>应用名称</label>
+    <input id="cfg_appName" placeholder="知隅">
+  </div>
+  <div class="field">
+    <label>Slogan（副标题）</label>
+    <input id="cfg_slogan" placeholder="在安静的角落里，读懂自己">
+  </div>
+  <div class="field">
+    <label>关于页简介</label>
+    <textarea id="cfg_about" rows="3"></textarea>
+  </div>
+  <button class="btn" onclick="saveConfig()">保存基础信息</button>
+</div>
+
+<!-- 角色头像 -->
+<div class="section">
+  <div class="section-title">👤 角色头像</div>
+  <div class="avatar-upload">
+    <div class="avatar-preview" id="prev_zhinuan">👩</div>
+    <div>
+      <div style="font-size:14px;font-weight:600">知暖（女角色）</div>
+      <button class="upload-btn" onclick="uploadAvatar('zhinuan')">更换头像</button>
+    </div>
+  </div>
+  <div class="avatar-upload">
+    <div class="avatar-preview" id="prev_yuchuan">👦</div>
+    <div>
+      <div style="font-size:14px;font-weight:600">屿川（男角色）</div>
+      <button class="upload-btn" onclick="uploadAvatar('yuchuan')">更换头像</button>
+    </div>
+  </div>
+  <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+</div>
+
+<!-- 功能开关 -->
+<div class="section">
+  <div class="section-title">🛠️ 功能开关</div>
+  <div class="toggle"><label>破冰开场</label><input type="checkbox" id="sw_icebreaker" checked></div>
+  <div class="toggle"><label>心意转译</label><input type="checkbox" id="sw_expression" checked></div>
+  <div class="toggle"><label>心思解码</label><input type="checkbox" id="sw_mindreader" checked></div>
+  <div class="toggle"><label>聊天解读</label><input type="checkbox" id="sw_chatanalysis" checked></div>
+  <div class="toggle"><label>约会策划</label><input type="checkbox" id="sw_dateplanner" checked></div>
+  <div class="toggle"><label>分手挽回</label><input type="checkbox" id="sw_breakuprescue" checked></div>
+  <div class="toggle"><label>形象穿搭</label><input type="checkbox" id="sw_style" checked></div>
+  <div class="toggle"><label>在乎的人</label><input type="checkbox" id="sw_loved" checked></div>
+  <button class="btn" onclick="saveSwitches()">保存开关</button>
+</div>
+
+<!-- 更新公告 -->
+<div class="section">
+  <div class="section-title">📢 更新公告</div>
+  <div class="field">
+    <label>公告内容（留空则不显示弹窗）</label>
+    <textarea id="cfg_notice" rows="3" placeholder="例：v2.6 新增形象穿搭、在乎的人功能…"></textarea>
+  </div>
+  <div class="notice-preview" id="noticePreview">预览：暂无公告</div>
+  <button class="btn" onclick="saveNotice()">保存公告</button>
+  <button class="btn btn-danger" onclick="clearNotice()" style="margin-top:6px">清除公告</button>
+</div>
+
+<!-- 会员设置 -->
+<div class="section">
+  <div class="section-title">💎 会员设置</div>
+  <div class="field">
+    <label>会员价格（元/月）</label>
+    <input id="cfg_memberPrice" type="number" placeholder="9.9">
+  </div>
+  <div class="field">
+    <label>会员说明</label>
+    <textarea id="cfg_memberDesc" rows="2" placeholder="解锁深度报告、无限次工具使用…"></textarea>
+  </div>
+  <button class="btn" onclick="saveMember()">保存会员设置</button>
+</div>
+
+<!-- 数据管理 -->
+<div class="section">
+  <div class="section-title">💾 数据管理</div>
+  <button class="btn" onclick="exportData()">导出全部数据</button>
+  <button class="btn btn-danger" onclick="clearAllData()" style="margin-top:6px">清除全部数据（危险）</button>
+</div>
+
+<script>
+// 读取配置
+function loadConfig() {
+  const cfg = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+  ['appName','slogan','about','notice','memberPrice','memberDesc'].forEach(k => {
+    const el = document.getElementById('cfg_' + k);
+    if (el && cfg[k] !== undefined) el.value = cfg[k];
+  });
+  // 头像
+  const avatars = JSON.parse(localStorage.getItem('adminAvatars') || '{}');
+  if (avatars.zhinuan) document.getElementById('prev_zhinuan').innerHTML = '<img src="' + avatars.zhinuan + '">';
+  if (avatars.yuchuan) document.getElementById('prev_yuchuan').innerHTML = '<img src="' + avatars.yuchuan + '">';
+  // 开关
+  const sw = JSON.parse(localStorage.getItem('adminSwitches') || '{}');
+  ['icebreaker','expression','mindreader','chatanalysis','dateplanner','breakuprescue','style','loved'].forEach(k => {
+    const el = document.getElementById('sw_' + k);
+    if (el) el.checked = sw[k] !== false; // 默认开
+  });
+  // 公告预览
+  if (cfg.notice) document.getElementById('noticePreview').textContent = '预览：' + cfg.notice;
+}
+
+function saveConfig() {
+  const cfg = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+  ['appName','slogan','about'].forEach(k => {
+    const el = document.getElementById('cfg_' + k);
+    if (el) cfg[k] = el.value.trim();
+  });
+  localStorage.setItem('adminConfig', JSON.stringify(cfg));
+  showToast('基础信息已保存');
+}
+
+function saveNotice() {
+  const cfg = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+  cfg.notice = document.getElementById('cfg_notice').value.trim();
+  localStorage.setItem('adminConfig', JSON.stringify(cfg));
+  document.getElementById('noticePreview').textContent = '预览：' + (cfg.notice || '暂无公告');
+  showToast('公告已保存');
+}
+
+function clearNotice() {
+  const cfg = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+  cfg.notice = '';
+  localStorage.setItem('adminConfig', JSON.stringify(cfg));
+  document.getElementById('cfg_notice').value = '';
+  document.getElementById('noticePreview').textContent = '预览：暂无公告';
+  showToast('公告已清除');
+}
+
+function saveSwitches() {
+  const sw = {};
+  ['icebreaker','expression','mindreader','chatanalysis','dateplanner','breakuprescue','style','loved'].forEach(k => {
+    sw[k] = document.getElementById('sw_' + k).checked;
+  });
+  localStorage.setItem('adminSwitches', JSON.stringify(sw));
+  showToast('功能开关已保存');
+}
+
+function saveMember() {
+  const cfg = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+  cfg.memberPrice = document.getElementById('cfg_memberPrice').value;
+  cfg.memberDesc = document.getElementById('cfg_memberDesc').value.trim();
+  localStorage.setItem('adminConfig', JSON.stringify(cfg));
+  showToast('会员设置已保存');
+}
+
+let currentAvatarKey = '';
+function uploadAvatar(key) {
+  currentAvatarKey = key;
+  document.getElementById('avatarInput').click();
+}
+
+function handleAvatarUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const avatars = JSON.parse(localStorage.getItem('adminAvatars') || '{}');
+    avatars[currentAvatarKey] = ev.target.result;
+    localStorage.setItem('adminAvatars', JSON.stringify(avatars));
+    document.getElementById('prev_' + currentAvatarKey).innerHTML = '<img src="' + ev.target.result + '">';
+    showToast('头像已更换');
+  };
+  reader.readAsDataURL(file);
+}
+
+function exportData() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    data[k] = localStorage.getItem(k);
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'zhiyu_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showToast('数据已导出');
+}
+
+function clearAllData() {
+  if (!confirm('确定清除全部数据？包括聊天记录、测评结果、档案等，此操作不可恢复！')) return;
+  if (!confirm('再次确认：清除全部数据？')) return;
+  localStorage.clear();
+  showToast('已清除全部数据');
+  setTimeout(() => location.reload(), 1000);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// 监听公告输入实时预览
+document.getElementById('cfg_notice').addEventListener('input', function() {
+  document.getElementById('noticePreview').textContent = '预览：' + (this.value.trim() || '暂无公告');
+});
+
+loadConfig();
+</script>
+</body>
+</html>
