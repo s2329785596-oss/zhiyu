@@ -212,8 +212,8 @@
         <div class="tool-messages" id="tool-messages"></div>
       </div>
       <div class="chat-input-area">
-        <input type="text" id="tool-input" placeholder="说说你的情况..." onkeypress="handleToolKey(event)">
-        <button class="send-btn" onclick="sendToolMessage()">发送</button>
+        <textarea id="tool-input" placeholder="说说你的情况..." rows="1" oninput="autoResize(this)" onkeypress="handleToolKey(event)"></textarea>
+        <button class="send-btn" id="tool-send-btn" onclick="sendToolMessage()">发送</button>
       </div>
     </div>
 

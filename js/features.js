@@ -424,6 +424,11 @@ function renderToolLanding(id) {
   }
 }
 function toolAsk(el) {
+  // 视觉反馈：选中态
+  const parent = el.parentNode;
+  parent.querySelectorAll('.zy-chip').forEach(function(c) { c.classList.remove('on'); });
+  el.classList.add('on');
+  
   const input = document.getElementById('tool-input');
   input.value = el.textContent;
   sendToolMessage();

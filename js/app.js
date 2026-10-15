@@ -614,8 +614,14 @@ function autoResize(textarea) {
 function updateSendButton() {
   const input = document.getElementById('chat-input');
   const btn = document.getElementById('send-btn');
-  if (btn) {
+  if (input && btn) {
     btn.disabled = !input.value.trim() || chatState.aiTyping;
+  }
+  // 工具页发送按钮
+  const toolInput = document.getElementById('tool-input');
+  const toolBtn = document.getElementById('tool-send-btn');
+  if (toolInput && toolBtn) {
+    toolBtn.disabled = !toolInput.value.trim();
   }
 }
 
@@ -946,7 +952,10 @@ function readyPasteChat() {
 }
 
 function handleToolKey(e) {
-  if (e.key === 'Enter') sendToolMessage();
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendToolMessage();
+  }
 }
 
 async function sendToolMessage() {
@@ -955,6 +964,7 @@ async function sendToolMessage() {
   if (!text) return;
   
   input.value = '';
+  autoResize(input);
   
   const container = document.getElementById('tool-messages');
   container.innerHTML += '<div class="message user"><div class="message-bubble">' + escapeHtml(text) + '</div></div>';
@@ -995,6 +1005,7 @@ async function sendToolMessage() {
     document.getElementById('tool-typing')?.remove();
     container.innerHTML += '<div class="message ai"><div class="message-bubble">网络有点问题，稍后再试~</div></div>';
   }
+  updateSendButton();
 }
 
 // ============ Procenter ============
