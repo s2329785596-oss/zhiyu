@@ -2008,3 +2008,48 @@ input:focus, textarea:focus {
 .tl-scene-t, .tl-map-t { font-size: 13.5px; font-weight: 600; margin-bottom: 10px; }
 .tl-chips, .tl-map-btns { display: flex; flex-wrap: wrap; }
 .tl-scene-sub { font-size: 12px; color: var(--zy-text-sub); margin-top: 4px; }
+
+/* 消息时间戳 */
+.msg-time {
+  text-align: center;
+  font-size: 11px;
+  color: #B0A89E;
+  margin: 12px 0 8px;
+  letter-spacing: 1px;
+}
+
+/* 输入框多行 */
+.chat-input-area textarea {
+  flex: 1;
+  border: 1px solid var(--zy-line);
+  border-radius: 18px;
+  padding: 10px 14px;
+  font-size: 15px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+  max-height: 120px;
+  background: #fff;
+}
+.chat-input-area textarea:focus {
+  border-color: var(--zy-primary);
+}
+
+/* 发送按钮禁用态 */
+.send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 下拉加载提示 */
+.pull-load-more {
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--zy-text-sub);
+  cursor: pointer;
+}
+.pull-load-more:active {
+  background: rgba(91,111,130,0.05);
+}

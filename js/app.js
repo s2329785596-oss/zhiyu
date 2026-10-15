@@ -469,6 +469,9 @@ function initChatPage() {
   // 加载消息
   renderChatMessages();
   
+  // 下拉加载更多
+  initLoadMore();
+  
   // 如果没有消息，显示欢迎语
   const history = chatStorage.getHistory(30);
   if (history.length === 0) {
@@ -512,15 +515,22 @@ function renderChatMessages() {
   
   let html = '';
   let lastSpeaker = '';
+  let lastTime = 0;
   
   history.forEach(h => {
+    // 时间戳：间隔>5 分钟显示一次
+    if (h.timestamp - lastTime > 5 * 60 * 1000) {
+      html += '<div class="msg-time">' + chatStorage.formatTime(h.timestamp) + '</div>';
+      lastTime = h.timestamp;
+    }
+    
     if (h.role === 'user') {
       var userBubble = '';
       if (h.image) {
         userBubble += '<img class="uploaded-shot" src="' + h.image + '">';
         if (h.content && h.content !== '[图片]') userBubble += '<div class="msg-img-caption">' + escapeHtml(h.content) + '</div>';
       } else {
-        userBubble += escapeHtml(h.content);
+        userBubble += escapeHtml(h.content).replace(/\n/g, '<br>');
       }
       html += '<div class="message user"><div class="message-bubble">' + userBubble + '</div></div>';
       lastSpeaker = 'user';
@@ -547,13 +557,14 @@ function renderChatMessages() {
 function renderMessageHtml(type, content, name, avatarUrl, showName) {
   if (type === 'ai') {
     const nameHtml = showName !== false ? '<div class="message-name">' + escapeHtml(name) + '</div>' : '';
+    const formattedContent = escapeHtml(content).replace(/\n/g, '<br>');
     return '<div class="message ai">' +
       '<img class="message-avatar" src="' + avatarUrl + '">' +
       '<div class="message-body">' + nameHtml +
-      '<div class="message-bubble">' + escapeHtml(content) + '</div></div></div>';
+      '<div class="message-bubble">' + formattedContent + '</div></div></div>';
   }
   return '<div class="message user"><div class="message-body">' +
-    '<div class="message-bubble">' + escapeHtml(content) + '</div></div></div>';
+    '<div class="message-bubble">' + escapeHtml(content).replace(/\n/g, '<br>') + '</div></div></div>';
 }
 
 function scrollChatBottom() {
@@ -561,8 +572,58 @@ function scrollChatBottom() {
   setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
 }
 
+// 下拉加载更多
+let loadMorePage = 1;
+function initLoadMore() {
+  const container = document.getElementById('chat-messages');
+  container.addEventListener('scroll', function() {
+    if (container.scrollTop < 50 && !container.dataset.loading) {
+      loadMorePage++;
+      container.dataset.loading = '1';
+      container.insertAdjacentHTML('afterbegin', '<div class="pull-load-more" id="load-more-hint">加载中…</div>');
+      setTimeout(() => {
+        const older = chatStorage.getHistoryPaged(loadMorePage, 15);
+        const hint = document.getElementById('load-more-hint');
+        if (hint) hint.remove();
+        container.dataset.loading = '';
+        if (older.length === 0) {
+          loadMorePage--;
+          return;
+        }
+        let html = '';
+        older.forEach(h => {
+          if (h.role === 'user') {
+            html += '<div class="message user"><div class="message-bubble">' + escapeHtml(h.content).replace(/\n/g, '<br>') + '</div></div>';
+          } else if (h.type !== 'system') {
+            const sp = chatState.isFemale ? SPEAKERS.zhinuan : SPEAKERS.yuchuan;
+            html += renderMessageHtml('ai', h.content, sp.name, sp.avatarUrl, false);
+          }
+        });
+        container.insertAdjacentHTML('afterbegin', html);
+      }, 300);
+    }
+  });
+}
+
+function autoResize(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+  updateSendButton();
+}
+
+function updateSendButton() {
+  const input = document.getElementById('chat-input');
+  const btn = document.getElementById('send-btn');
+  if (btn) {
+    btn.disabled = !input.value.trim() || chatState.aiTyping;
+  }
+}
+
 function handleChatKey(e) {
-  if (e.key === 'Enter') sendMessage();
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
 }
 
 function sendMessage() {
@@ -571,6 +632,8 @@ function sendMessage() {
   if (!text || chatState.aiTyping) return;
   
   input.value = '';
+  autoResize(input);
+  updateSendButton();
   
   // 保存并显示用户消息
   chatStorage.saveMessage('user', text);

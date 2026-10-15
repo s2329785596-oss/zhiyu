@@ -26,6 +26,15 @@ const chatStorage = {
     return history.filter(h => h.timestamp >= cutoff);
   },
   
+  getHistoryPaged: function(page, pageSize) {
+    page = page || 1;
+    pageSize = pageSize || 20;
+    const history = this._getRawHistory();
+    const start = history.length - page * pageSize;
+    const end = history.length - (page - 1) * pageSize;
+    return history.slice(Math.max(0, start), Math.max(0, end)).reverse();
+  },
+  
   clearHistory: function() {
     wx.removeStorageSync(this.STORAGE_KEY);
   },
@@ -52,6 +61,16 @@ const chatStorage = {
       userMessages: userCount,
       assistantMessages: assistantCount
     };
+  },
+  
+  formatTime: function(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    if (isToday) return hh + ':' + mm;
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hh + ':' + mm;
   },
   
   _getRawHistory: function() {

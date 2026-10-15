@@ -128,8 +128,8 @@
       <div class="chat-messages" id="chat-messages"></div>
       <div class="chat-input-area">
         <button class="plus-btn" onclick="toggleMoreMenu(event)">+</button>
-        <input type="text" id="chat-input" placeholder="说说你的事..." onkeypress="handleChatKey(event)">
-        <button class="send-btn" onclick="sendMessage()">发送</button>
+        <textarea id="chat-input" placeholder="说说你的事..." rows="1" oninput="autoResize(this)" onkeypress="handleChatKey(event)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">发送</button>
       </div>
       <div class="more-menu hidden" id="more-menu">
         <div class="menu-item" onclick="inviteGuest()">
