@@ -56,6 +56,20 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#F6F3EE;color
   <button class="btn" onclick="saveConfig()">保存基础信息</button>
 </div>
 
+<!-- 品牌 LOGO -->
+<div class="section">
+  <div class="section-title">🪄 品牌 LOGO</div>
+  <div style="font-size:12px;color:#969088;margin-bottom:10px">应用启动页图标，建议正方形 512×512，圆角或方形均可。</div>
+  <div class="avatar-upload">
+    <div class="avatar-preview" id="prev_logo" style="border-radius:18px;font-size:24px">🪄</div>
+    <div>
+      <div style="font-size:14px;font-weight:600">应用 LOGO</div>
+      <button class="upload-btn" onclick="uploadLogo()">更换 LOGO</button>
+    </div>
+  </div>
+  <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+</div>
+
 <!-- 角色头像 -->
 <div class="section">
   <div class="section-title">👤 角色头像</div>
@@ -74,6 +88,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#F6F3EE;color
     </div>
   </div>
   <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+  <div style="font-size:12px;color:#969088;margin-top:10px">说明：后台更换仅保存在本手机浏览器（与 App 同域共享）。打包进 App 的默认头像由我直接替换图片文件，所有用户可见。</div>
 </div>
 
 <!-- 功能开关 -->
@@ -135,6 +150,9 @@ function loadConfig() {
   const avatars = JSON.parse(localStorage.getItem('adminAvatars') || '{}');
   if (avatars.zhinuan) document.getElementById('prev_zhinuan').innerHTML = '<img src="' + avatars.zhinuan + '">';
   if (avatars.yuchuan) document.getElementById('prev_yuchuan').innerHTML = '<img src="' + avatars.yuchuan + '">';
+  // LOGO
+  const brand = JSON.parse(localStorage.getItem('adminBrand') || '{}');
+  if (brand.logo) document.getElementById('prev_logo').innerHTML = '<img src="' + brand.logo + '" style="border-radius:14px">';
   // 开关
   const sw = JSON.parse(localStorage.getItem('adminSwitches') || '{}');
   ['icebreaker','expression','mindreader','chatanalysis','dateplanner','breakuprescue','style','loved'].forEach(k => {
@@ -202,9 +220,48 @@ function handleAvatarUpload(e) {
   reader.onload = function(ev) {
     const avatars = JSON.parse(localStorage.getItem('adminAvatars') || '{}');
     avatars[currentAvatarKey] = ev.target.result;
-    localStorage.setItem('adminAvatars', JSON.stringify(avatars));
+    try {
+      localStorage.setItem('adminAvatars', JSON.stringify(avatars));
+    } catch(err) { alert('图片太大存不下，换张小点的图'); return; }
     document.getElementById('prev_' + currentAvatarKey).innerHTML = '<img src="' + ev.target.result + '">';
     showToast('头像已更换');
+  };
+  reader.readAsDataURL(file);
+}
+
+// LOGO：居中裁成正方形，压到 512，避免撑爆 localStorage
+function uploadLogo() {
+  document.getElementById('logoInput').click();
+}
+function handleLogoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const min = Math.min(img.width, img.height);
+      const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+      const data = canvas.toDataURL('image/png');
+      const brand = JSON.parse(localStorage.getItem('adminBrand') || '{}');
+      brand.logo = data;
+      try {
+        localStorage.setItem('adminBrand', JSON.stringify(brand));
+      } catch(err) {
+        try {
+          brand.logo = canvas.toDataURL('image/jpeg', 0.88);
+          localStorage.setItem('adminBrand', JSON.stringify(brand));
+        } catch(e2) { alert('图片太大存不下，换张小点的图'); return; }
+      }
+      document.getElementById('prev_logo').innerHTML = '<img src="' + brand.logo + '" style="border-radius:14px">';
+      showToast('LOGO 已更换');
+    };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }

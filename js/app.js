@@ -103,7 +103,39 @@ function goTo(pageName) {
 }
 
 // ============ 初始化 ============
+// 读取管理后台配置（同域 localStorage 共享），覆盖默认品牌/头像
+function applyAdminConfig() {
+  try {
+    const cfg = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+    const brand = JSON.parse(localStorage.getItem('adminBrand') || '{}');
+    const avatars = JSON.parse(localStorage.getItem('adminAvatars') || '{}');
+
+    // LOGO
+    if (brand.logo) {
+      document.querySelectorAll('img.ob-logo').forEach(img => { img.src = brand.logo; });
+    }
+    // 应用名 / Slogan
+    if (cfg.appName) {
+      const w = document.querySelector('.ob-word'); if (w) w.textContent = cfg.appName;
+      document.title = cfg.appName;
+    }
+    if (cfg.slogan) {
+      const s = document.querySelector('.ob-slogan'); if (s) s.textContent = cfg.slogan;
+    }
+    // 角色头像：覆盖运行时 SPEAKERS 与默认用户头像
+    if (avatars.zhinuan) SPEAKERS.zhinuan.avatarUrl = avatars.zhinuan;
+    if (avatars.yuchuan) SPEAKERS.yuchuan.avatarUrl = avatars.yuchuan;
+    window.__adminAvatars = avatars;
+  } catch (e) { /* 配置损坏不影响启动 */ }
+}
+
+function adminAvatar(key, fallback) {
+  const a = window.__adminAvatars || {};
+  return a[key] || fallback;
+}
+
 function init() {
+  applyAdminConfig();
   // 加载用户数据
   userProfile = wx.getStorageSync('userProfile') || {};
   
@@ -239,8 +271,8 @@ function initGenderPage() {
   const isMale = gender === 'male';
   
   const ga = document.getElementById('greeting-avatar');
-  const _avUrl = isMale ? 'images/avatars/yuchuan.png' : 'images/avatars/zhinuan.png';
-  ga.innerHTML = '<img class="ga-img" src="' + _avUrl + '?v=2" alt="">';
+  const _avUrl = isMale ? adminAvatar('yuchuan', 'images/avatars/yuchuan.png') : adminAvatar('zhinuan', 'images/avatars/zhinuan.png');
+  ga.innerHTML = '<img class="ga-img" src="' + _avUrl + '" alt="">';
   document.getElementById('greeting-name').textContent = isMale ? '屿川' : '知暖';
   document.getElementById('greeting-text').textContent = isMale ?
     '嘿，兄弟。我是屿川。拉你进个小群，就咱仨——感情上的事儿想吐槽、想问招，随时开口。' :
@@ -995,8 +1027,12 @@ async function sendToolMessage() {
   autoResize(input);
   
   const container = document.getElementById('tool-messages');
-  container.innerHTML += '<div class="message user"><div class="message-bubble">' + escapeHtml(text) + '</div></div>';
-  container.innerHTML += '<div class="message ai" id="tool-typing"><div class="message-bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+  const sp = (typeof chatState !== 'undefined' && chatState.isFemale) ? SPEAKERS.zhinuan : SPEAKERS.yuchuan;
+  container.innerHTML += '<div class="message user"><div class="message-bubble">' + escapeHtml(text).replace(/\n/g, '<br>') + '</div></div>';
+  container.innerHTML += '<div class="message ai" id="tool-typing">'
+    + '<img class="message-avatar" src="' + sp.avatarUrl + '">'
+    + '<div class="message-body"><div class="message-name">' + sp.name + '</div>'
+    + '<div class="message-bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>';
   container.scrollTop = container.scrollHeight;
   
   try {
@@ -1013,7 +1049,7 @@ async function sendToolMessage() {
           { role: 'user', content: text }
         ],
         temperature: 0.8,
-        max_tokens: 700
+        max_tokens: 900
       })
     });
     
@@ -1024,14 +1060,15 @@ async function sendToolMessage() {
     if (data.choices && data.choices[0]) {
       reply = data.choices[0].message.content;
     } else {
-      reply = '我想了想，建议你直接真诚地表达你的想法，这比任何话术都有效。';
+      reply = '我想了想，最实在的还是真诚地把你心里想的说出来，这比啥话术都管用。要不你把前因后果再跟我说说，我陪你一句一句捋。';
     }
     
-    container.innerHTML += '<div class="message ai"><div class="message-bubble">' + escapeHtml(reply).replace(/\n/g, '<br>') + '</div></div>';
+    container.innerHTML += renderMessageHtml('ai', reply, sp.name, sp.avatarUrl, false);
     var _pc = document.querySelector('#page-tool .page-content'); if (_pc) _pc.scrollTop = _pc.scrollHeight;
   } catch(e) {
     document.getElementById('tool-typing')?.remove();
-    container.innerHTML += '<div class="message ai"><div class="message-bubble">网络有点问题，稍后再试~</div></div>';
+    const sp2 = (typeof chatState !== 'undefined' && chatState.isFemale) ? SPEAKERS.zhinuan : SPEAKERS.yuchuan;
+    container.innerHTML += renderMessageHtml('ai', '网络有点小问题，没发出去。你再点一次试试，要是还不行就稍等会儿～', sp2.name, sp2.avatarUrl, false);
   }
   updateSendButton();
 }
@@ -1290,7 +1327,7 @@ function uploadImage() {
 
 // ============ 用户头像：默认按性别显示角色图，点击可上传自定义 ============
 function getDefaultUserAvatar(isFemale) {
-  return isFemale ? 'images/avatars/zhinuan.png' : 'images/avatars/yuchuan.png';
+  return isFemale ? adminAvatar('zhinuan', 'images/avatars/zhinuan.png') : adminAvatar('yuchuan', 'images/avatars/yuchuan.png');
 }
 
 function renderUserAvatar(elId, isFemale) {
