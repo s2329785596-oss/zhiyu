@@ -247,6 +247,10 @@ function submitProfile() {
   
   wx.setStorageSync('userProfile', userProfile);
   wx.setStorageSync('gender', selectedGender);
+  // 性别确定后，用户头像默认用该性别第1张预设（不影响已上传的自定义头像）
+  if (!wx.getStorageSync('userAvatar')) {
+    wx.setStorageSync('userAvatarPreset', '1');
+  }
   
   // 跳到性别选择（角色登场）
   initGenderPage();
@@ -1325,22 +1329,104 @@ function uploadImage() {
   document.body.removeChild(input);
 }
 
-// ============ 用户头像：默认按性别显示角色图，点击可上传自定义 ============
+// ============ 用户头像：同性别2张预设可选 + 可上传任意头像 + 可恢复默认 ============
+// 与陪伴角色（屿川/知暖）区分：用户头像是"普通人"正脸形象，男生蓝青调、女生粉橙调
+function getUserProfile() {
+  return wx.getStorageSync('userProfile') || {};
+}
+var USER_PRESETS = {
+  male:   ['images/avatars/user_m1.png', 'images/avatars/user_m2.png'],
+  female: ['images/avatars/user_f1.png', 'images/avatars/user_f2.png']
+};
+var AV_VER = 'v3'; // 头像资源版本号，换图后用于破缓存
+
 function getDefaultUserAvatar(isFemale) {
-  return isFemale ? adminAvatar('zhinuan', 'images/avatars/zhinuan.png') : adminAvatar('yuchuan', 'images/avatars/yuchuan.png');
+  const presets = isFemale ? USER_PRESETS.female : USER_PRESETS.male;
+  // 记录用户选过的预设下标，没有就用第1张
+  const idx = parseInt(wx.getStorageSync('userAvatarPreset'), 10);
+  const chosen = (idx === 1 || idx === 2) ? presets[idx - 1] : presets[0];
+  return chosen;
+}
+
+// 取得当前应显示的用户头像（自定义优先，否则预设）
+function currentUserAvatar(isFemale) {
+  const custom = wx.getStorageSync('userAvatar');
+  if (custom) return { url: custom, custom: true };
+  return { url: getDefaultUserAvatar(isFemale), custom: false };
 }
 
 function renderUserAvatar(elId, isFemale) {
   const el = document.getElementById(elId);
   if (!el) return;
-  const custom = wx.getStorageSync('userAvatar');
-  const url = custom || getDefaultUserAvatar(isFemale);
-  el.innerHTML = '<img src="' + url + (custom ? '' : '?v=2') + '" alt="头像" class="user-avatar-img">';
+  const cur = currentUserAvatar(isFemale);
+  const src = cur.custom ? cur.url : cur.url + '?' + AV_VER;
+  el.innerHTML = '<img src="' + src + '" alt="我的头像" class="user-avatar-img">';
   el.style.cursor = 'pointer';
-  el.onclick = function() { pickUserAvatar(elId, isFemale); };
+  el.onclick = function() { openAvatarPicker(isFemale); };
 }
 
-function pickUserAvatar(elId, isFemale) {
+function refreshAllUserAvatars(isFemale) {
+  const profile = getUserProfile();
+  const female = (typeof isFemale === 'boolean') ? isFemale : !!(profile && profile.gender === 'female');
+  renderUserAvatar('duc-avatar', female);
+  renderUserAvatar('pc-avatar', female);
+}
+
+// 头像选择弹层
+function openAvatarPicker(isFemale) {
+  closeAvatarPicker();
+  const presets = isFemale ? USER_PRESETS.female : USER_PRESETS.male;
+  const cur = currentUserAvatar(isFemale);
+  const curIdx = parseInt(wx.getStorageSync('userAvatarPreset'), 10);
+  const activePreset = cur.custom ? -1 : ((curIdx === 1 || curIdx === 2) ? curIdx - 1 : 0);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'av-sheet-mask';
+  wrap.id = 'av-sheet-mask';
+  let items = '';
+  presets.forEach(function(p, i) {
+    const on = (!cur.custom && i === activePreset) ? ' on' : '';
+    items += '<div class="av-opt' + on + '" onclick="pickPresetAvatar(' + i + ')">'
+           + '<img src="' + p + '?' + AV_VER + '"></div>';
+  });
+  wrap.innerHTML =
+    '<div class="av-sheet" onclick="event.stopPropagation()">'
+    + '  <div class="av-sheet-title">选个头像</div>'
+    + '  <div class="av-grid">' + items + '</div>'
+    + '  <button class="av-btn av-btn-up" onclick="uploadCustomAvatar()">📷 从相册选一张</button>'
+    + (cur.custom ? '<button class="av-btn av-btn-reset" onclick="resetUserAvatar()">↺ 换回默认头像</button>' : '')
+    + '  <button class="av-btn av-btn-cancel" onclick="closeAvatarPicker()">取消</button>'
+    + '</div>';
+  wrap.onclick = closeAvatarPicker;
+  document.body.appendChild(wrap);
+}
+
+function closeAvatarPicker() {
+  const old = document.getElementById('av-sheet-mask');
+  if (old && old.parentNode) old.parentNode.removeChild(old);
+}
+
+function pickPresetAvatar(i) {
+  const profile = getUserProfile();
+  const isFemale = !!(profile && profile.gender === 'female');
+  wx.setStorageSync('userAvatarPreset', String(i + 1));
+  wx.removeStorageSync('userAvatar');
+  closeAvatarPicker();
+  refreshAllUserAvatars(isFemale);
+  toast('头像换好啦');
+}
+
+function resetUserAvatar() {
+  const profile = getUserProfile();
+  const isFemale = !!(profile && profile.gender === 'female');
+  wx.removeStorageSync('userAvatar');
+  wx.setStorageSync('userAvatarPreset', '1');
+  closeAvatarPicker();
+  refreshAllUserAvatars(isFemale);
+  toast('已换回默认头像');
+}
+
+function uploadCustomAvatar() {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
@@ -1350,14 +1436,12 @@ function pickUserAvatar(elId, isFemale) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(ev) {
-      // 压缩到 256px 避免 localStorage 爆掉
       const img = new Image();
       img.onload = function() {
         const size = 256;
         const canvas = document.createElement('canvas');
         canvas.width = size; canvas.height = size;
         const ctx = canvas.getContext('2d');
-        // 居中裁剪成正方形
         const min = Math.min(img.width, img.height);
         const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
         ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
@@ -1365,11 +1449,14 @@ function pickUserAvatar(elId, isFemale) {
         try {
           wx.setStorageSync('userAvatar', data);
         } catch (err) {
-          alert('图片太大存不下，换一张试试');
+          toast('图片太大存不下，换一张试试');
           return;
         }
-        renderUserAvatar('duc-avatar', isFemale);
-        renderUserAvatar('pc-avatar', isFemale);
+        const profile = getUserProfile();
+        const isFemale = !!(profile && profile.gender === 'female');
+        closeAvatarPicker();
+        refreshAllUserAvatars(isFemale);
+        toast('头像换好啦');
       };
       img.src = ev.target.result;
     };
@@ -1378,4 +1465,20 @@ function pickUserAvatar(elId, isFemale) {
   document.body.appendChild(input);
   input.click();
   document.body.removeChild(input);
+}
+
+// 轻提示（若无全局 toast 则兜底）
+function toast(msg) {
+  if (window.showToast) { window.showToast(msg); return; }
+  let t = document.getElementById('zy-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'zy-toast';
+    t.className = 'zy-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.classList.remove('show'); }, 1600);
 }

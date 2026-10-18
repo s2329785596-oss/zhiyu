@@ -2081,3 +2081,52 @@ input:focus, textarea:focus {
   animation: spinRotate 0.8s linear infinite;
 }
 @keyframes spinRotate { to { transform: rotate(360deg); } }
+
+/* ===== v2.8 用户头像选择弹层 ===== */
+.av-sheet-mask {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(60, 44, 32, 0.38);
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: avMaskIn .18s ease-out;
+}
+@keyframes avMaskIn { from { opacity: 0; } to { opacity: 1; } }
+.av-sheet {
+  width: 100%; max-width: 430px;
+  background: linear-gradient(180deg, #FFFDF9 0%, #FBF5EC 100%);
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 30px rgba(120, 90, 60, .18);
+  animation: avSheetIn .24s cubic-bezier(.2,.8,.25,1);
+}
+@keyframes avSheetIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.av-sheet-title { text-align:center; font-size:16px; font-weight:600; color:#6B5544; margin-bottom:16px; }
+.av-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+.av-opt {
+  position:relative; aspect-ratio:1/1; border-radius:50%; overflow:hidden;
+  border:3px solid transparent; cursor:pointer;
+  box-shadow:0 4px 12px rgba(150,120,90,.15); transition:transform .15s, border-color .15s;
+}
+.av-opt img { width:100%; height:100%; object-fit:cover; display:block; }
+.av-opt:active { transform: scale(.94); }
+.av-opt.on { border-color:#C89B7A; box-shadow:0 0 0 3px rgba(200,155,122,.25), 0 4px 12px rgba(150,120,90,.2); }
+.av-opt.on::after {
+  content:'✓'; position:absolute; right:6px; bottom:6px;
+  width:24px; height:24px; line-height:24px; text-align:center; border-radius:50%;
+  background:#C89B7A; color:#fff; font-size:14px; font-weight:700;
+}
+.av-btn {
+  width:100%; padding:13px; border:none; border-radius:14px; font-size:15px;
+  margin-bottom:10px; cursor:pointer; font-weight:600;
+}
+.av-btn-up { background:linear-gradient(135deg,#D9A57E,#C89B7A); color:#fff; box-shadow:0 4px 12px rgba(200,155,122,.3); }
+.av-btn-reset { background:#F3EADD; color:#8A6E55; font-weight:500; }
+.av-btn-cancel { background:transparent; color:#A8937C; font-weight:400; margin-bottom:0; }
+
+/* 轻提示 toast */
+.zy-toast {
+  position:fixed; left:50%; top:42%; transform:translate(-50%,-50%) scale(.9);
+  background:rgba(50,38,28,.86); color:#fff; padding:12px 22px; border-radius:12px;
+  font-size:14px; z-index:10000; opacity:0; pointer-events:none;
+  transition:opacity .18s, transform .18s; max-width:80%; text-align:center;
+}
+.zy-toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
