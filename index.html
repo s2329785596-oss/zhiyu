@@ -40,13 +40,14 @@
         <div class="form-group">
           <label>性别（必填）</label>
           <div class="gender-select">
-            <button class="gender-btn male" onclick="selectGender('male')">🧑 男生</button>
-            <button class="gender-btn female" onclick="selectGender('female')">👩 女生</button>
+            <button type="button" class="gender-btn male" onclick="selectGender('male')"><span class="gb-label">男生</span><span class="gb-check">✓</span></button>
+            <button type="button" class="gender-btn female" onclick="selectGender('female')"><span class="gb-label">女生</span><span class="gb-check">✓</span></button>
           </div>
         </div>
         <div class="form-group">
           <label>生日（必填）</label>
-          <input type="date" id="profile-birthdate" onchange="calcAgeZodiac()">
+          <div id="birth-display" class="birth-display" onclick="openBirthPicker()"><span class="bd-placeholder">请选择生日</span></div>
+          <input type="hidden" id="profile-birthdate">
           <div id="age-zodiac" class="hint-text"></div>
         </div>
         <div class="form-group">
@@ -403,6 +404,23 @@
 
   <!-- Toast -->
   <div id="toast" class="toast hidden"></div>
+
+  <!-- 自定义生日选择器（修复部分安卓 WebView 系统日期控件白屏/错乱） -->
+  <div id="birth-picker" class="bp-mask hidden" onclick="if(event.target===this)closeBirthPicker()">
+    <div class="bp-panel">
+      <div class="bp-header">
+        <button type="button" class="bp-btn cancel" onclick="closeBirthPicker()">取消</button>
+        <div class="bp-title">选择生日</div>
+        <button type="button" class="bp-btn confirm" onclick="confirmBirth()">确定</button>
+      </div>
+      <div class="bp-wheels">
+        <div class="bp-indicator"></div>
+        <div class="bp-col" id="bp-year"></div>
+        <div class="bp-col" id="bp-month"></div>
+        <div class="bp-col" id="bp-day"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal -->
   <div id="modal" class="modal hidden">

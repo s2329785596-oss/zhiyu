@@ -163,7 +163,128 @@ function selectGender(gender) {
   selectedGender = gender;
   document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
   document.querySelector('.gender-btn.' + gender).classList.add('selected');
-  wx.vibrateShort({ type: 'light' });
+  // 明确的“按到了”反馈：中等振动 + CSS 描边/底色/打勾
+  if (typeof wx !== 'undefined' && wx.vibrateShort) wx.vibrateShort({ type: 'medium' });
+}
+
+// ============ 自定义生日选择器（修复部分安卓 WebView 系统 date 控件白屏/半截） ============
+var BP_ITEM_H = 40;
+var bpState = { year: 2000, month: 1, day: 1 };
+
+function bpDaysInMonth(y, m) {
+  return new Date(y, m, 0).getDate();
+}
+
+function openBirthPicker() {
+  var cur = document.getElementById('profile-birthdate').value;
+  if (cur) {
+    var p = cur.split('-');
+    bpState.year = parseInt(p[0]);
+    bpState.month = parseInt(p[1]);
+    bpState.day = parseInt(p[2]);
+  } else {
+    bpState.year = 2000; bpState.month = 1; bpState.day = 1;
+  }
+  var nowY = new Date().getFullYear();
+  document.getElementById('birth-picker').classList.remove('hidden');
+  buildWheel('bp-year', nowY - 60, nowY, bpState.year, function (v) { bpState.year = v; refreshDayColumn(); });
+  buildWheel('bp-month', 1, 12, bpState.month, function (v) { bpState.month = v; refreshDayColumn(); });
+  buildWheel('bp-day', 1, bpDaysInMonth(bpState.year, bpState.month), bpState.day, function (v) { bpState.day = v; });
+}
+
+function closeBirthPicker() {
+  document.getElementById('birth-picker').classList.add('hidden');
+}
+
+function confirmBirth() {
+  var mm = String(bpState.month).padStart(2, '0');
+  var dd = String(bpState.day).padStart(2, '0');
+  var val = bpState.year + '-' + mm + '-' + dd;
+  document.getElementById('profile-birthdate').value = val;
+  syncBirthDisplay();
+  calcAgeZodiac();
+  closeBirthPicker();
+  if (typeof wx !== 'undefined' && wx.vibrateShort) wx.vibrateShort({ type: 'light' });
+}
+
+function syncBirthDisplay() {
+  var val = document.getElementById('profile-birthdate').value;
+  var box = document.getElementById('birth-display');
+  if (!box) return;
+  if (val) {
+    var p = val.split('-');
+    box.textContent = p[0] + ' 年 ' + parseInt(p[1], 10) + ' 月 ' + parseInt(p[2], 10) + ' 日';
+    box.classList.add('has-value');
+  } else {
+    box.innerHTML = '<span class="bd-placeholder">请选择生日</span>';
+    box.classList.remove('has-value');
+  }
+}
+
+// 年/月变化后，按当月天数就地重建“日”列
+function refreshDayColumn() {
+  var col = document.getElementById('bp-day');
+  if (!col || col.getAttribute('data-built') !== '1') return;
+  var max = bpDaysInMonth(bpState.year, bpState.month);
+  if (bpState.day > max) bpState.day = max;
+  buildWheel('bp-day', 1, max, bpState.day, function (v) { bpState.day = v; });
+}
+
+// 单列滚轮：触摸滑动 / 鼠标滚轮 / 点按均可；scroll-snap + 松手吸附
+function buildWheel(id, min, max, current, onChange) {
+  var col = document.getElementById(id);
+  col.innerHTML = '';
+  col.setAttribute('data-built', '1');
+
+  for (var v = min; v <= max; v++) {
+    (function (val) {
+      var it = document.createElement('div');
+      it.className = 'bp-item';
+      it.textContent = (id === 'bp-year') ? (val + '年') : (id === 'bp-month' ? (val + '月') : (val + '日'));
+      it.dataset.value = val;
+      it.addEventListener('click', function () {
+        col.scrollTo({ top: (val - min) * BP_ITEM_H, behavior: 'smooth' });
+      });
+      col.appendChild(it);
+    })(v);
+  }
+
+  function indexOfScroll() {
+    var idx = Math.round(col.scrollTop / BP_ITEM_H);
+    if (idx < 0) idx = 0;
+    if (idx > max - min) idx = max - min;
+    return idx;
+  }
+  function syncActive() {
+    var val = min + indexOfScroll();
+    var items = col.children;
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle('active', parseInt(items[i].dataset.value, 10) === val);
+    }
+    if (val !== current) { current = val; onChange(val); }
+  }
+  // 用 onscroll 覆盖式赋值，避免重复打开/重建列时监听器堆积
+  var snapTimer = null;
+  col.onscroll = function () {
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(function () {
+      col.scrollTo({ top: indexOfScroll() * BP_ITEM_H, behavior: 'smooth' });
+      syncActive();
+    }, 90);
+    syncActive();
+  };
+  // 桌面调试：鼠标滚轮逐行
+  col.onwheel = function (e) {
+    e.preventDefault();
+    var dir = e.deltaY > 0 ? 1 : -1;
+    var idx = indexOfScroll() + dir;
+    if (idx < 0) idx = 0;
+    if (idx > max - min) idx = max - min;
+    col.scrollTo({ top: idx * BP_ITEM_H, behavior: 'smooth' });
+  };
+
+  col.scrollTop = (current - min) * BP_ITEM_H;
+  syncActive();
 }
 
 function calcAgeZodiac() {
@@ -263,9 +384,14 @@ function editProfile() {
   if (userProfile) {
     document.getElementById('profile-nickname').value = userProfile.nickname || '';
     document.getElementById('profile-birthdate').value = userProfile.birthdate || '';
+    syncBirthDisplay();
+    calcAgeZodiac();
     document.getElementById('profile-status').value = userProfile.relationshipStatus || '';
     document.getElementById('profile-need').value = userProfile.need || '';
     selectedGender = userProfile.gender;
+    document.querySelectorAll('.gender-btn').forEach(function (b) { b.classList.remove('selected'); });
+    var _gb = document.querySelector('.gender-btn.' + selectedGender);
+    if (_gb) _gb.classList.add('selected');
   }
 }
 

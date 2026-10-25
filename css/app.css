@@ -2130,3 +2130,139 @@ input:focus, textarea:focus {
   transition:opacity .18s, transform .18s; max-width:80%; text-align:center;
 }
 .zy-toast.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+
+/* ========== 2026-10-26 内测修复：性别选中强反馈 + 自定义生日选择器 ========== */
+/* 性别：纯文字，选中即描边变色+浅底+右上角打勾 */
+#page-profile .gender-btn {
+  position: relative !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px;
+  transition: transform .12s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease !important;
+}
+#page-profile .gender-btn .gb-check {
+  display: none;
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  border-radius: 50%;
+  background: #5B6F82;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.18);
+}
+#page-profile .gender-btn.female .gb-check { background: #C98A9E; }
+#page-profile .gender-btn.male.selected {
+  border-color: #5B6F82 !important;
+  background: rgba(91,111,130,.12) !important;
+  color: #42536B;
+  box-shadow: 0 2px 10px rgba(91,111,130,.18) !important;
+}
+#page-profile .gender-btn.female.selected {
+  border-color: #C98A9E !important;
+  background: rgba(201,138,158,.12) !important;
+  color: #A86279;
+  box-shadow: 0 2px 10px rgba(201,138,158,.20) !important;
+}
+#page-profile .gender-btn.selected .gb-check { display: block; }
+#page-profile .gender-btn:active { transform: scale(.95); }
+
+/* 生日展示框（替代系统 date 输入） */
+#page-profile .birth-display {
+  height: 52px !important;
+  border: 2px solid #E0DAD0 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  display: flex !important;
+  align-items: center;
+  padding: 0 16px !important;
+  font-size: 16px;
+  color: var(--zy-text);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+#page-profile .birth-display .bd-placeholder { color: #B6AFA4; }
+#page-profile .birth-display.has-value { color: var(--zy-text); font-weight: 500; }
+#page-profile .birth-display::after {
+  content: '▾';
+  margin-left: auto;
+  color: #B0A498;
+  font-size: 16px;
+}
+
+/* 生日滚轮弹层 */
+.bp-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,26,20,.42);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+}
+.bp-mask.hidden { display: none; }
+.bp-panel {
+  width: 100%;
+  background: #FBFAF7;
+  border-radius: 20px 20px 0 0;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  animation: bpUp .22s ease;
+}
+@keyframes bpUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.bp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #ECE8E1;
+}
+.bp-title { font-size: 16px; font-weight: 600; color: #2C2925; }
+.bp-btn { background: none; border: none; font-size: 15px; padding: 4px 8px; cursor: pointer; }
+.bp-btn.cancel { color: #969088; }
+.bp-btn.confirm { color: #5B6F82; font-weight: 700; }
+.bp-wheels {
+  position: relative;
+  display: flex;
+  height: 220px;
+  padding: 12px 8px;
+}
+.bp-indicator {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 40px;
+  border-top: 1px solid #E4DED4;
+  border-bottom: 1px solid #E4DED4;
+  background: rgba(91,111,130,.045);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.bp-col {
+  flex: 1;
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  text-align: center;
+  padding: 90px 0;
+}
+.bp-col::-webkit-scrollbar { display: none; }
+.bp-item {
+  height: 40px;
+  line-height: 40px;
+  font-size: 18px;
+  color: #B6AFA4;
+  scroll-snap-align: center;
+  transition: color .15s ease, transform .15s ease;
+}
+.bp-item.active {
+  color: #2C2925;
+  font-weight: 700;
+  transform: scale(1.08);
+}
