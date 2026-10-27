@@ -27,20 +27,29 @@ function hideGlobalLoading() {
   if (el) el.style.display = 'none';
 }
 
+function iconSVG(name){
+  var paths = {
+    chat:'<path d="M20 11.6c0 3.8-3.6 6.8-8 6.8-1 0-2-.2-2.9-.5L5 19.4l1-3.4C4.8 14.7 4 13.2 4 11.6 4 7.8 7.6 4.8 12 4.8s8 3 8 6.8z"/>',
+    phone:'<rect x="6.5" y="3" width="11" height="18" rx="2.6"/><path d="M10.6 18h2.8"/>',
+    camera:'<rect x="3.5" y="7.5" width="17" height="12.4" rx="2.6"/><circle cx="12" cy="13.7" r="3.4"/><path d="M8.4 7.5 9.6 5h4.8l1.2 2.5"/>'
+  };
+  return '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(paths[name]||'')+'</g></svg>';
+}
+
 // 角色配置
 const SPEAKERS = {
-  yuchuan: { name: '屿川', avatar: '🏔️', avatarUrl: 'images/avatars/yuchuan.png', emoji: '🏔️' },
-  zhinuan: { name: '知暖', avatar: '🌸', avatarUrl: 'images/avatars/zhinuan.png', emoji: '🌸' }
+  yuchuan: { name: '屿川', avatar: '', avatarUrl: 'images/avatars/yuchuan.png', emoji: '' },
+  zhinuan: { name: '知暖', avatar: '', avatarUrl: 'images/avatars/zhinuan.png', emoji: '' }
 };
 
 // 快捷工具
 const QUICK_TOOLS = [
-  { id: 'chat_rescue', name: '💬 聊天急救', ask: { male: '她刚跟我说了句话，我不知道怎么回了，帮我看看该怎么接。', female: '他刚跟我说了句话，我不知道怎么回了，帮我看看该怎么接。' }},
-  { id: 'breakup', name: '🧩 情感挽回', ask: { male: '我最近感情出问题了，吵架/冷战/快分手了，我想挽回，你帮我分析分析。', female: '我最近感情出问题了，吵架/冷战/快分手了，我想挽回，你帮我分析分析。' }},
-  { id: 'icebreak', name: '🌱 破冰开场', ask: { male: '我刚认识一个女生，不知道怎么开场、找什么话题，教教我。', female: '我刚认识一个男生，不知道怎么开场、找什么话题，教教我。' }},
-  { id: 'mind_read', name: '🔍 TA的心思', ask: { male: '她最近有些反应我有点摸不透，你帮我分析分析她是怎么想的。', female: '他最近有些反应我有点摸不透，你帮我分析分析他是怎么想的。' }},
-  { id: 'date_plan', name: '📍 约会策划', ask: { male: '我想约她出来，但不知道去哪、怎么安排、聊什么，帮我策划一下。', female: '他约我/我想约他，但不知道约会怎么安排，帮我策划一下。' }},
-  { id: 'image', name: '👔 形象改造', ask: { male: '我想提升一下外在形象，发型、穿搭、气质这块给我点实用建议。', female: '我想提升一下外在形象，发型、穿搭、妆容这块给我点实用建议。' }}
+  { id: 'chat_rescue', name: '聊天急救', ask: { male: '她刚跟我说了句话，我不知道怎么回了，帮我看看该怎么接。', female: '他刚跟我说了句话，我不知道怎么回了，帮我看看该怎么接。' }},
+  { id: 'breakup', name: '情感挽回', ask: { male: '我最近感情出问题了，吵架/冷战/快分手了，我想挽回，你帮我分析分析。', female: '我最近感情出问题了，吵架/冷战/快分手了，我想挽回，你帮我分析分析。' }},
+  { id: 'icebreak', name: '破冰开场', ask: { male: '我刚认识一个女生，不知道怎么开场、找什么话题，教教我。', female: '我刚认识一个男生，不知道怎么开场、找什么话题，教教我。' }},
+  { id: 'mind_read', name: 'TA的心思', ask: { male: '她最近有些反应我有点摸不透，你帮我分析分析她是怎么想的。', female: '他最近有些反应我有点摸不透，你帮我分析分析他是怎么想的。' }},
+  { id: 'date_plan', name: '约会策划', ask: { male: '我想约她出来，但不知道去哪、怎么安排、聊什么，帮我策划一下。', female: '他约我/我想约他，但不知道约会怎么安排，帮我策划一下。' }},
+  { id: 'image', name: '形象改造', ask: { male: '我想提升一下外在形象，发型、穿搭、气质这块给我点实用建议。', female: '我想提升一下外在形象，发型、穿搭、妆容这块给我点实用建议。' }}
 ];
 
 // 工具欢迎语
@@ -1112,11 +1121,11 @@ function showChatAnalysisIntro() {
   const box = document.getElementById('tool-messages');
   box.innerHTML =
     '<div class="ca-card ca-what">' +
-      '<div class="ca-card-title">💬 这是什么？</div>' +
+      '<div class="ca-card-title"><span class="ico-mi">'+iconSVG('chat')+'</span> 这是什么？</div>' +
       '<div class="ca-card-body">把你和 TA 的整段聊天发我，我帮你看：对方话里的情绪、对你的态度、关系卡在哪，以及下一步怎么接。比你一条条截图问看得更全。</div>' +
     '</div>' +
     '<div class="ca-card ca-how">' +
-      '<div class="ca-card-title">📲 怎么导出聊天记录</div>' +
+      '<div class="ca-card-title"><span class="ico-mi">'+iconSVG('phone')+'</span> 怎么导出聊天记录</div>' +
       '<div class="ca-step"><span class="ca-no">1</span><span>打开微信，进入你和 TA 的聊天界面</span></div>' +
       '<div class="ca-step"><span class="ca-no">2</span><span>长按任意一条消息，点「多选」</span></div>' +
       '<div class="ca-step"><span class="ca-no">3</span><span>勾选想分析的消息（可点「全选」）</span></div>' +
@@ -1519,7 +1528,7 @@ function openAvatarPicker(isFemale) {
     '<div class="av-sheet" onclick="event.stopPropagation()">'
     + '  <div class="av-sheet-title">选个头像</div>'
     + '  <div class="av-grid">' + items + '</div>'
-    + '  <button class="av-btn av-btn-up" onclick="uploadCustomAvatar()">📷 从相册选一张</button>'
+    + '  <button class="av-btn av-btn-up" onclick="uploadCustomAvatar()">'+iconSVG('camera')+' 从相册选一张</button>'
     + (cur.custom ? '<button class="av-btn av-btn-reset" onclick="resetUserAvatar()">↺ 换回默认头像</button>' : '')
     + '  <button class="av-btn av-btn-cancel" onclick="closeAvatarPicker()">取消</button>'
     + '</div>';

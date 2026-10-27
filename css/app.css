@@ -2266,3 +2266,29 @@ input:focus, textarea:focus {
   font-weight: 700;
   transform: scale(1.08);
 }
+
+/* ============================================================
+   v2.9.1 统一线性图标 / 顶部安全区 / 关闭拼写检查痕迹
+   ============================================================ */
+.ico { width: 1.15em; height: 1.15em; display: inline-block; vertical-align: -0.18em; flex: 0 0 auto; }
+.ico-sm { width: 1em; height: 1em; vertical-align: -0.12em; }
+.ico-mi { width: 1.05em; height: 1.05em; vertical-align: -0.2em; margin-right: 2px; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; line-height: 1; color: #4A443B; }
+.icon-btn .ico { width: 23px; height: 23px; }
+.menu-icon .ico, .tg-ico .ico, .duc-member .ico { width: 20px; height: 20px; }
+.more-menu .menu-icon { color: #5B6F82; }
+.tg-ico { color: #8B7D6B; }
+.duc-member { color: #C9A86A; }
+.df-item .ico { color: #7A7062; }
+.speed-header { display: flex; align-items: center; gap: 7px; }
+.speed-header .ico { color: #B89B6A; }
+.ca-card-title { display: flex; align-items: center; gap: 7px; }
+.ca-card-title .ico { color: #8B7D6B; }
+.av-btn-up .ico { width: 1.05em; height: 1.05em; vertical-align: -0.2em; margin-right: 4px; }
+#duc-avatar { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
+
+/* 安卓 WebView：顶栏避让状态栏；背景与页面同色，不再露白条 */
+.chat-header, .nav-bar { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+
+/* 彻底关掉拼写检查的蓝色波浪线 */
+input, textarea { spellcheck: false; }
