@@ -51,24 +51,38 @@ if ($cfg.plugins.PSObject.Properties.Name -notcontains 'CapacitorHttp') {
 Get-Content $cfgPath
 
 Write-Host '===== [4b/8] 内容延伸到状态栏（edge-to-edge，消除顶部白条）=====' -ForegroundColor Cyan
-$mainJava = Join-Path $AND 'app\src\main\java\com\zhiyu\app\MainActivity.java'
+$javaDir = Join-Path $AND 'app\src\main\java\com\zhiyu\app'
+$mainJava = Join-Path $javaDir 'MainActivity.java'
+if (-not (Test-Path $mainJava)) {
+  $found = Get-ChildItem -Path (Join-Path $AND 'app\src') -Recurse -Filter 'MainActivity.java' -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($found) { $mainJava = $found.FullName; $javaDir = Split-Path $mainJava }
+}
 if (Test-Path $mainJava) {
-  $mjc = Get-Content $mainJava -Raw -Encoding UTF8
-  if ($mjc -notmatch 'setDecorFitsSystemWindows') {
-    $mjc = $mjc -replace 'public void onCreate\(', @'
-  public void onCreate(
-'@
-    # 在 onCreate 里 super.onCreate 之后插入 edge-to-edge
-    $inject = @'
+  Copy-Item $mainJava (Join-Path $javaDir 'MainActivity.java.bak') -Force
+}
+$mainSrc = @"
+package com.zhiyu.app;
 
-    // v2.9.1 内容画到状态栏下方，配合 CSS safe-area 内边距，消除顶部白条
-    getWindow().setDecorFitsSystemWindows(false);
-'@
-    $mjc = $mjc -replace '(super\.onCreate\(savedInstanceState\);)', ('$1' + $inject)
-    [System.IO.File]::WriteAllText($mainJava, $mjc, (New-Object Text.UTF8Encoding($false)))
-    Write-Host '  MainActivity 已加 setDecorFitsSystemWindows(false)'
-  } else { Write-Host '  已存在，跳过' }
-} else { Write-Host '  警告：找不到 MainActivity.java，仅靠 CSS 适配' -ForegroundColor Yellow }
+import android.os.Bundle;
+import android.view.View;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // v2.9.1 edge-to-edge：内容绘制到状态栏下方，内边距交给 CSS safe-area
+        getWindow().setDecorFitsSystemWindows(false);
+        // 奶油底色上使用深色状态栏图标，保证时间/电量可见
+        View decor = getWindow().getDecorView();
+        decor.setSystemUiVisibility(decor.getSystemUiVisibility()
+            | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+    }
+}
+"@
+[System.IO.Directory]::CreateDirectory($javaDir) | Out-Null
+[System.IO.File]::WriteAllText($mainJava, $mainSrc, (New-Object Text.UTF8Encoding($false)))
+Write-Host "  MainActivity.java -> $mainJava"
 
 Write-Host '===== [5/8] 版本号 -> 11 / 2.9.1 =====' -ForegroundColor Cyan
 $gradle = Join-Path $AND 'app\build.gradle'
