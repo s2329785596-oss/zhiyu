@@ -16,18 +16,26 @@ if (-not $env:JAVA_HOME) { $env:JAVA_HOME = 'C:\Program Files\Microsoft\jdk-17.0
 Write-Host "JAVA_HOME=$env:JAVA_HOME"
 Write-Host "sdk.dir=$(Get-Content (Join-Path $AND 'local.properties'))"
 
-Write-Host '===== [2/8] 拉取最新 H5 源码（e1abc7b v2.9.1）=====' -ForegroundColor Cyan
-$zip = "$env:TEMP\zhiyu_main.zip"
-if (Test-Path $zip) { Remove-Item $zip -Force }
-# 国内可直连 codeload
-Invoke-WebRequest -Uri 'https://codeload.github.com/s2329785596-oss/zhiyu/zip/refs/heads/main' -OutFile $zip -UseBasicParsing -TimeoutSec 120
-if (Test-Path $PATCH) { Remove-Item $PATCH -Recurse -Force }
-New-Item -ItemType Directory -Path $PATCH | Out-Null
-Expand-Archive -Path $zip -DestinationPath $PATCH -Force
-$SRC = Get-ChildItem $PATCH -Directory | Select-Object -First 1
-Write-Host "源码目录: $($SRC.FullName)"
-$test = Select-String -Path (Join-Path $SRC.FullName 'index.html') -Pattern 'i-clock' -Quiet
-if (-not $test) { throw '下载的源码不是 v2.9.1（找不到 SVG 图标），中止' }
+Write-Host '===== [2/8] 定位最新 H5 源码（优先云盘本地，失败回退 GitHub）=====' -ForegroundColor Cyan
+$driveSrc = 'C:\Users\电脑\Coze\Drive\情感成长助手\zhiyu_gh_pages'
+$SRC = $null
+if ((Test-Path (Join-Path $driveSrc 'index.html')) -and
+    (Select-String -Path (Join-Path $driveSrc 'index.html') -Pattern 'i-clock' -Quiet) -and
+    (Select-String -Path (Join-Path $driveSrc 'js\app.js') -Pattern 'iconSVG' -Quiet)) {
+  $SRC = Get-Item $driveSrc
+  Write-Host "  使用云盘最新源码: $driveSrc"
+} else {
+  $zip = "$env:TEMP\zhiyu_main.zip"
+  if (Test-Path $zip) { Remove-Item $zip -Force }
+  Invoke-WebRequest -Uri 'https://codeload.github.com/s2329785596-oss/zhiyu/zip/refs/heads/main' -OutFile $zip -UseBasicParsing -TimeoutSec 120
+  if (Test-Path $PATCH) { Remove-Item $PATCH -Recurse -Force }
+  New-Item -ItemType Directory -Path $PATCH | Out-Null
+  Expand-Archive -Path $zip -DestinationPath $PATCH -Force
+  $SRC = Get-ChildItem $PATCH -Directory | Select-Object -First 1
+  Write-Host "  使用 GitHub 源码: $($SRC.FullName)"
+}
+$srcOk = Select-String -Path (Join-Path $SRC.FullName 'index.html') -Pattern 'i-clock' -Quiet
+if (-not $srcOk) { throw '源码不是 v2.9.1（找不到 SVG 图标），中止' }
 
 Write-Host '===== [3/8] 同步 H5 到三处目录 =====' -ForegroundColor Cyan
 $targets = @(
@@ -36,7 +44,9 @@ $targets = @(
   (Join-Path $AND 'app\src\main\assets\public')
 )
 foreach ($t in $targets) {
-  Copy-Item (Join-Path $SRC.FullName '*') -Destination $t -Recurse -Force
+  # /E 含子目录 /XD 排除 .git 与 _deploy /NFL /NDL 精简输出
+  robocopy $SRC.FullName $t /E /XD '.git' '_deploy' /NFL /NDL /NJH /NJS /NP | Out-Null
+  if ($LASTEXITCODE -ge 8) { throw "robocopy 失败(码 $LASTEXITCODE): $t" }
   Write-Host "  OK $t"
 }
 
