@@ -2674,3 +2674,20 @@ html, body { background: #F6F3EE !important; }
   color: #C7C1B8;
   cursor: pointer;
 }
+
+/* 抽屉顶部：话术库入口 */
+.drw-scripts {
+  display: flex;
+  align-items: center;
+  margin: 10px 14px 4px;
+  padding: 13px 14px;
+  background: linear-gradient(135deg, #FBFAF7 0%, #F3EFE7 100%);
+  border: 1px solid #E8E2D8;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.drw-scripts:active { opacity: .9; }
+.drw-scripts-l { flex: 1; min-width: 0; }
+.drw-scripts-t { font-size: 14.5px; font-weight: 500; color: #2C2925; }
+.drw-scripts-s { margin-top: 3px; font-size: 11.5px; color: #A99C87; }
+.drw-scripts .ico-sm { color: #B7B0A7; flex: 0 0 auto; }

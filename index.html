@@ -161,11 +161,19 @@
             <div class="duc-member" onclick="event.stopPropagation();goTo('member')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-diamond"/></svg></div>
           </div>
 
+          <!-- 话术库：像字典一样翻，想找什么搜什么 -->
+          <div class="drw-scripts" onclick="openScripts()">
+            <div class="drw-scripts-l">
+              <div class="drw-scripts-t">话术库</div>
+              <div class="drw-scripts-s">360 条现成的话 · 按场景翻，或者直接搜</div>
+            </div>
+            <svg class="ico-sm" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </div>
+
           <!-- 工具区 -->
           <div class="drawer-section">
-            <div class="tools-title acc-head" onclick="toggleAcc(this)"><span class="acc-name">聊天帮手</span><span class="acc-num">5</span><svg class="acc-arrow" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron"/></svg></div>
+            <div class="tools-title acc-head" onclick="toggleAcc(this)"><span class="acc-name">聊天帮手</span><span class="acc-num">4</span><svg class="acc-arrow" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron"/></svg></div>
             <div class="tool-grid acc-body">
-              <div class="tg-cell" onclick="openScripts()" style="--ic:#8A6D3B;--ib:rgba(138,109,59,.20)"><span class="tg-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-scroll"/></svg></span><span class="tg-tx">话术库</span></div>
               <div class="tg-cell" onclick="useTool('icebreaker')" style="--ic:#5C7A52;--ib:rgba(92,122,82,.20)"><span class="tg-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sprout"/></svg></span><span class="tg-tx">破冰开场</span></div>
               <div class="tg-cell" onclick="useTool('expression')" style="--ic:#3F6B8C;--ib:rgba(63,107,140,.19)"><span class="tg-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mail"/></svg></span><span class="tg-tx">心意转译</span></div>
               <div class="tg-cell" onclick="useTool('mindreader')" style="--ic:#6F5F94;--ib:rgba(111,95,148,.20)"><span class="tg-ico"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search"/></svg></span><span class="tg-tx">心思解码</span></div>
