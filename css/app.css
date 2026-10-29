@@ -2292,3 +2292,385 @@ input:focus, textarea:focus {
 
 /* 彻底关掉拼写检查的蓝色波浪线 */
 input, textarea { spellcheck: false; }
+
+/* ============================================================
+   v2.9.2 顶部白边彻底修复（2026-10-30）
+   问题：顶栏半透明+backdrop-filter 在安卓 WebView 里渲染成纯白，
+        与奶油色页面割裂成一条白边；群名被安全区留白顶掉。
+   做法：顶栏改不透明奶油色；向上用伪元素兜住安全区；
+        html/body 也铺底色，WebView 白底不再外露。
+   ============================================================ */
+html, body { background: #F6F3EE !important; }
+
+.chat-header, .nav-bar {
+  background: #F6F3EE !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(236, 232, 225, .9);
+  position: relative;
+  z-index: 60;
+}
+
+/* 向上兜底：WebView 顶部留出的安全区也是奶油色 */
+.chat-header::before, .nav-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 200px;
+  background: #F6F3EE;
+  pointer-events: none;
+}
+
+/* 群名/成员：强制上下两行、强制可见 */
+.chat-title {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start;
+  min-width: 0;
+}
+.group-name {
+  display: block !important;
+  font-size: 16px !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  color: #2C2925 !important;
+  white-space: nowrap;
+}
+.group-members {
+  display: block !important;
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+  color: #969088 !important;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   v2.9.3 图标分层：一图标一色丸，功能区一眼分得开
+   原来所有工具图标共用一套暖黄渐变底 + 同一个驼色线，
+   堆在一起像一块纯色布，看不出区别。现在按语义分色：
+   底色是同色 12~15% 的极淡药丸，线条是低饱和主色，
+   整体仍是奶油暖调，但每个工具都有自己的"记忆点"。
+   ============================================================ */
+.tg-ico {
+  background: var(--ib, linear-gradient(135deg, #F3EDE2, #EAE1D2)) !important;
+  color: var(--ic, #8B7D6B);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  transition: transform .16s ease, background-color .16s ease;
+}
+.tg-ico .ico { width: 20px; height: 20px; }
+.tg-cell:active .tg-ico { transform: scale(.92); }
+
+/* 底部设置 / 关于 */
+.df-ico {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ic, #7A7062);
+  background: var(--ib, rgba(122,112,98,.11));
+  flex: 0 0 auto;
+}
+.df-ico .ico-sm { width: 15px; height: 15px; }
+
+/* 测评两个入口也分开：快=暖橙，慢=苔绿 */
+.speed-header .ico-mi { color: inherit; }
+.speed-header .ico-bolt { color: #C08457; }
+.speed-header .ico-slow { color: #7C9473; }
+
+
+/* ============================================================
+   v2.9.4（2026-10-30）
+   1) 抽屉改手风琴折叠：一组一开，收起时抽屉一屏放得下
+   2) 工具图标底色加深到 20%、线条加粗，解决"白墙画白花"
+   ============================================================ */
+
+/* ---- 折叠头 ---- */
+.drawer-section { padding: 12px 16px 0 !important; }
+.tools-title.acc-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 10px 0 !important;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.acc-head .acc-name { flex: 1 1 auto; }
+.acc-head .acc-num {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  color: #A99C87 !important;
+  background: rgba(170,158,140,.13);
+  border-radius: 20px;
+  padding: 1px 8px;
+  line-height: 1.6;
+}
+.acc-head .acc-arrow {
+  width: 13px; height: 13px;
+  color: #BDB2A0;
+  flex: 0 0 auto;
+  transition: transform .26s cubic-bezier(.4,0,.2,1), color .2s ease;
+}
+.drawer-section.open .acc-head .acc-arrow { transform: rotate(90deg); color: #8B7D6B; }
+.drawer-section.open .acc-head .acc-name { color: #6B6155 !important; }
+
+/* ---- 折叠体 ---- */
+.tool-grid.acc-body {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0 !important;
+  transition: max-height .30s cubic-bezier(.4,0,.2,1), opacity .20s ease;
+}
+.drawer-section.open .tool-grid.acc-body {
+  max-height: 440px;
+  opacity: 1;
+  padding-bottom: 12px;
+}
+
+/* ---- 图标对比度：底色够浓，线条够实 ---- */
+.tg-ico {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background: var(--ib, rgba(122,112,98,.18)) !important;
+  color: var(--ic, #6B6155) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.45);
+}
+.tg-ico .ico { width: 21px !important; height: 21px !important; stroke-width: 2.05; }
+.tg-tx { font-size: 13.5px; color: #3E3830; font-weight: 500; }
+.tg-cell { border: 1px solid rgba(226,218,204,.75); }
+
+/* ============================================================
+ * v2.9 话术库（和小程序同一套数据、同一套搜索）
+ * ============================================================ */
+#page-scripts { background: #F6F3EE; }
+
+.sc-top {
+  flex: 0 0 auto;
+  padding: 0 14px;
+  background: #F6F3EE;
+}
+.sc-search {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 11px;
+  background: #FBFAF7;
+  border: 1px solid #ECE8E1;
+  border-radius: 999px;
+}
+.sc-search-icon { font-size: 11px; color: #B7B0A7; margin-right: 7px; }
+.sc-search-input {
+  flex: 1; min-width: 0;
+  border: none; outline: none; background: transparent;
+  font-size: 13px; color: #2C2925;
+  font-family: inherit;
+}
+.sc-search-input::placeholder { color: #C7C1B8; }
+.sc-search-clear { padding: 0 5px; font-size: 15px; color: #B7B0A7; line-height: 1; cursor: pointer; }
+
+.sc-hot {
+  height: 31px;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-top: 6px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sc-hot::-webkit-scrollbar { display: none; }
+.sc-hot-t { display: inline-block; margin-right: 6px; font-size: 10px; color: #B7B0A7; vertical-align: middle; }
+.sc-hot-i {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 3px 9px;
+  font-size: 11px;
+  color: #8A8378;
+  background: #F1EFE9;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.sc-cats {
+  height: 43px;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px 0 7px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sc-cats::-webkit-scrollbar { display: none; }
+.sc-cat {
+  display: inline-block;
+  margin-right: 7px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: #6B6155;
+  background: #FBFAF7;
+  border: 1px solid #ECE8E1;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.sc-cat.on { color: #FBFAF7; background: #6B6155; border-color: #6B6155; }
+
+#page-scripts .page-content {
+  padding: 4px 14px 0;
+  box-sizing: border-box;
+}
+.sc-count { padding: 4px 2px 9px; font-size: 11px; color: #B7B0A7; }
+
+.sc-card {
+  margin-bottom: 11px;
+  padding: 13px 12px 9px;
+  background: #FBFAF7;
+  border: 1px solid #ECE8E1;
+  border-radius: 11px;
+}
+.sc-card-head { display: flex; align-items: center; margin-bottom: 5px; }
+.sc-badge {
+  flex: 0 0 auto;
+  margin-right: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: #8A8378;
+  background: #F1EFE9;
+  border-radius: 4px;
+}
+.sc-scene { flex: 1; font-size: 13.5px; font-weight: 500; color: #2C2925; line-height: 1.5; }
+.sc-note { margin-bottom: 7px; font-size: 11px; line-height: 1.65; color: #A99C87; }
+
+.sc-line {
+  display: flex;
+  align-items: flex-start;
+  padding: 9px 0;
+  border-top: 1px solid #F2EEE7;
+  cursor: pointer;
+}
+.sc-line:active { background: #F7F4EE; }
+.sc-style {
+  flex: 0 0 auto;
+  margin-right: 7px;
+  margin-top: 1px;
+  padding: 1px 6px;
+  font-size: 10px;
+  color: #6B6155;
+  background: #EAF0F2;
+  border-radius: 3px;
+}
+.sc-text { flex: 1; min-width: 0; font-size: 12.5px; line-height: 1.7; color: #3A3630; }
+.sc-copy { flex: 0 0 auto; margin-left: 7px; margin-top: 2px; font-size: 10.5px; color: #B7B0A7; }
+
+.sc-ask {
+  margin-top: 5px;
+  padding-top: 8px;
+  border-top: 1px solid #F2EEE7;
+  text-align: right;
+  font-size: 11px;
+  color: #8A8378;
+  cursor: pointer;
+}
+
+.sc-empty { padding: 50px 0; text-align: center; }
+.sc-empty-t { font-size: 14px; color: #59544C; margin-bottom: 5px; }
+.sc-empty-s { font-size: 11.5px; color: #B7B0A7; margin-bottom: 15px; }
+.sc-empty-btn {
+  display: inline-block;
+  padding: 8px 22px;
+  font-size: 12.5px;
+  color: #FBFAF7;
+  background: #6B6155;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.sc-more, .sc-end { padding: 15px 0; text-align: center; font-size: 11px; color: #C7C1B8; }
+
+/* ============================================================
+ * v2.9 聊天解读：多图识别 / 攒记录 / 关系复盘
+ * ============================================================ */
+.ca-btns { display: flex; gap: 10px; margin: 16px 0 12px; }
+.ca-btn {
+  flex: 1;
+  height: 44px;
+  border: 1px solid #E2DCD2;
+  border-radius: 22px;
+  background: #FBFAF7;
+  color: #4A453D;
+  font-size: 14.5px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.ca-btn:active { opacity: .85; }
+.ca-btn-main {
+  background: #6B6155;
+  border-color: #6B6155;
+  color: #FBFAF7;
+}
+
+.ca-progress {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: #FBFAF7;
+  border: 1px solid #ECE8E1;
+  border-radius: 12px;
+}
+.ca-progress-t { font-size: 12.5px; color: #8A8378; margin-bottom: 8px; }
+.ca-progress-bar {
+  height: 4px;
+  background: #EFEBE4;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.ca-progress-fill {
+  height: 100%;
+  background: #6B6155;
+  border-radius: 999px;
+  transition: width .25s ease;
+}
+
+.ca-tipline {
+  margin: 0 0 14px;
+  padding: 10px 13px;
+  background: #F6F3EE;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #8A8275;
+}
+
+/* 攒下的记录 */
+.ca-arch {
+  position: relative;
+  padding: 16px 16px 24px;
+  background: #FBFAF7;
+  border: 1px solid #ECE8E1;
+  box-shadow: none;
+}
+.ca-arch-main { display: flex; align-items: center; cursor: pointer; }
+.ca-arch-l { flex: 1; min-width: 0; }
+.ca-arch-t { font-size: 14.5px; font-weight: 500; color: #2C2925; }
+.ca-arch-s { margin-top: 5px; font-size: 12px; line-height: 1.5; color: #A99C87; }
+.ca-arch-go { flex: 0 0 auto; margin-left: 10px; font-size: 13px; color: #B7B0A7; }
+.ca-arch-go.on { color: #6B6155; }
+.ca-arch-clear {
+  position: absolute;
+  right: 16px;
+  bottom: 5px;
+  padding: 4px 6px;
+  font-size: 11px;
+  color: #C7C1B8;
+  cursor: pointer;
+}

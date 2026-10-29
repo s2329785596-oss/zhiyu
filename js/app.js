@@ -1617,3 +1617,44 @@ function toast(msg) {
   clearTimeout(t._timer);
   t._timer = setTimeout(function() { t.classList.remove('show'); }, 1600);
 }
+
+
+// ============ v2.9.4 抽屉手风琴折叠 ============
+var ACC_KEY = 'zy_acc_group';
+
+function _accSections() {
+  return document.querySelectorAll('#left-drawer .drawer-section');
+}
+
+function toggleAcc(head) {
+  var sec = head.parentNode;
+  var secs = _accSections();
+  var wasOpen = sec.classList.contains('open');
+  for (var i = 0; i < secs.length; i++) secs[i].classList.remove('open');
+  if (!wasOpen) {
+    sec.classList.add('open');
+    for (var k = 0; k < secs.length; k++) {
+      if (secs[k] === sec) { try { localStorage.setItem(ACC_KEY, String(k)); } catch (e) {} }
+    }
+  } else {
+    try { localStorage.setItem(ACC_KEY, '-1'); } catch (e) {}
+  }
+}
+
+function initAcc() {
+  var secs = _accSections();
+  if (!secs.length) return;
+  var raw = null;
+  try { raw = localStorage.getItem(ACC_KEY); } catch (e) {}
+  var idx = (raw === null || raw === '') ? 0 : parseInt(raw, 10);
+  if (isNaN(idx) || idx < -1 || idx >= secs.length) idx = 0;
+  for (var i = 0; i < secs.length; i++) {
+    secs[i].classList.toggle('open', i === idx);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAcc);
+} else {
+  initAcc();
+}
