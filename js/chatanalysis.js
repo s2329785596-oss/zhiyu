@@ -192,7 +192,8 @@
         t = (d.choices[0].message.content || '').trim();
       }
       if (!t) return '';
-      if (t.indexOf('NO_CHAT') >= 0 && t.length < 40) return '';
+      // 模型不一定会严格输出 NO_CHAT，也会说"图中没有对话内容"，一并当失败
+      if (t.length < 60 && /NO_CHAT|没有对话|不是对话|无法识别|没有聊天/.test(t)) return '';
       return t;
     }).catch(function () { return ''; });
   }
