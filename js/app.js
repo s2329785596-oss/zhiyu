@@ -1100,10 +1100,14 @@ function renderHistory() {
 
 // ============ Tool Page ============
 let currentToolId = '';
+// 工具页对话历史（v2.9.6）：之前每轮都从零开始，模型不知道上一句说了什么，
+// 约会策划这种多轮问信息的最吃亏。这里存最近几轮，跟着工具切换清空。
+let toolChatHistory = [];
 
 function useTool(toolId) {
   closeDrawers();
   currentToolId = toolId;
+  toolChatHistory = [];
   
   const toolNames = {
     icebreaker: '破冰开场', expression: '心意转译', imagemakeover: '形象改造',
@@ -1184,8 +1188,39 @@ async function sendToolMessage() {
     + '<div class="message-body"><div class="message-name">' + sp.name + '</div>'
     + '<div class="message-bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>';
   container.scrollTop = container.scrollHeight;
-  
+
+  // 记进工具对话历史，让下一轮能接上
+  toolChatHistory.push({ role: 'user', content: text });
+
   try {
+    let sysContent = (typeof getToolSystemPrompt === 'function' ? getToolSystemPrompt(currentToolId) : '你是知隅的沟通陪伴助手，定位是亲密关系沟通参考工具。回复具体、实用、口语化。');
+
+    // 约会策划：先查高德真实场所，再让模型在里面挑
+    if (currentToolId === 'dateplanner' && window.ZYAmap) {
+      try {
+        const histText = toolChatHistory.map(function (h) { return h.content || ''; }).join(' ');
+        const city = window.ZYAmap.extractCity(text) || window.ZYAmap.extractCity(histText);
+        if (city) {
+          const tEl = document.querySelector('#tool-typing .message-bubble');
+          if (tEl) tEl.innerHTML = '<span class="tl-searching">正在查 ' + escapeHtml(city) + ' 附近的真实地方…</span>';
+          const budget = window.ZYAmap.extractBudget(text) || window.ZYAmap.extractBudget(histText);
+          const amapRes = await window.ZYAmap.searchPlaces({
+            city: city, groups: ['food', 'play'], budget: budget, perKw: 5
+          });
+          const block = window.ZYAmap.buildInjectBlock(amapRes);
+          if (block) sysContent += '\n\n' + block;
+          if (tEl) tEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+        }
+      } catch (e) {
+        console.warn('amap lookup failed', e);
+      }
+    }
+
+    const toolMsgs = [{ role: 'system', content: sysContent }];
+    toolChatHistory.slice(-6).forEach(function (h) {
+      if (h && h.content) toolMsgs.push({ role: h.role, content: String(h.content).slice(0, 1500) });
+    });
+
     const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
       method: 'POST',
       headers: {
@@ -1194,10 +1229,7 @@ async function sendToolMessage() {
       },
       body: JSON.stringify({
         model: 'glm-4-flash',
-        messages: [
-          { role: 'system', content: (typeof getToolSystemPrompt === 'function' ? getToolSystemPrompt(currentToolId) : '你是知隅的沟通陪伴助手，定位是亲密关系沟通参考工具。回复具体、实用、口语化。') },
-          { role: 'user', content: text }
-        ],
+        messages: toolMsgs,
         temperature: 0.8,
         max_tokens: 900
       })
@@ -1215,6 +1247,9 @@ async function sendToolMessage() {
     
     container.innerHTML += renderMessageHtml('ai', reply, sp.name, sp.avatarUrl, false);
     var _pc = document.querySelector('#page-tool .page-content'); if (_pc) _pc.scrollTop = _pc.scrollHeight;
+
+    toolChatHistory.push({ role: 'assistant', content: reply });
+    if (toolChatHistory.length > 12) toolChatHistory = toolChatHistory.slice(-12);
   } catch(e) {
     document.getElementById('tool-typing')?.remove();
     const sp2 = (typeof chatState !== 'undefined' && chatState.isFemale) ? SPEAKERS.zhinuan : SPEAKERS.yuchuan;

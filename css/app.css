@@ -2691,3 +2691,10 @@ html, body { background: #F6F3EE !important; }
 .drw-scripts-t { font-size: 14.5px; font-weight: 500; color: #2C2925; }
 .drw-scripts-s { margin-top: 3px; font-size: 11.5px; color: #A99C87; }
 .drw-scripts .ico-sm { color: #B7B0A7; flex: 0 0 auto; }
+
+/* 约会策划：查高德时的提示（v2.9.6） */
+.tl-searching {
+  font-size: 13px;
+  color: var(--zy-text-sub);
+  letter-spacing: .3px;
+}
