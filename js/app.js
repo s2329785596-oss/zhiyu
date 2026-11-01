@@ -895,6 +895,11 @@ function buildMainSystemPrompt(hasImage) {
       '看不清或图里信息不够，就老实说哪看不清、让用户补一张或讲讲，别瞎编图里没有的内容。\n';
   }
   p += '\n直接输出聊天内容，不要解释你在做什么。';
+  // v1.2.0 状态画像：只改「怎么说」，不改「说什么」。
+  // 新用户 / 攒得不够时返回空字符串，对 prompt 零影响。
+  try {
+    if (window.ZYProfile) p += window.ZYProfile.getNote();
+  } catch (e) {}
   return p;
 }
 
@@ -950,6 +955,12 @@ async function callAI(userText, imageDataUrl) {
 
     chatStorage.saveMessage('assistant', reply, { speaker: 'main' });
     renderChatMessages();
+
+    // v1.2.0 状态画像：回复已经显示了，后台静默扫一次（不阻塞、不打扰、失败无声）
+    // 有图时不扫——图里的文字不是用户自己的表达方式
+    if (!hasImage && window.ZYProfile) {
+      try { window.ZYProfile.scan(userText); } catch (e) {}
+    }
   } catch(e) {
     removeTypingIndicator();
     console.error('AI调用失败:', e);
