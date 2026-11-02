@@ -2288,7 +2288,9 @@ input:focus, textarea:focus {
 #duc-avatar { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
 
 /* 安卓 WebView：顶栏避让状态栏；背景与页面同色，不再露白条 */
-.chat-header, .nav-bar { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+/* v2.9.7 顶部避让：优先用 MainActivity 注入的真实状态栏高度 --zy-sat，
+   没有就用 env()，都没有兜底 26px（安卓常见 24dp 状态栏） */
+.chat-header, .nav-bar { padding-top: calc(12px + max(env(safe-area-inset-top, 0px), var(--zy-sat, 26px))); }
 
 /* 彻底关掉拼写检查的蓝色波浪线 */
 input, textarea { spellcheck: false; }
