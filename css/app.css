@@ -2288,9 +2288,10 @@ input:focus, textarea:focus {
 #duc-avatar { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
 
 /* 安卓 WebView：顶栏避让状态栏；背景与页面同色，不再露白条 */
-/* v2.9.7 顶部避让：优先用 MainActivity 注入的真实状态栏高度 --zy-sat，
-   没有就用 env()，都没有兜底 26px（安卓常见 24dp 状态栏） */
-.chat-header, .nav-bar { padding-top: calc(12px + max(env(safe-area-inset-top, 0px), var(--zy-sat, 26px))); }
+/* v2.9.8 顶部：WebView 本身就在状态栏下方，不再加安全区补偿。
+   v2.9.7 加的 --zy-sat 补偿会多出一块空白，正是用户看到的"刘海"。
+   状态栏那条改由安卓窗口底色（#F6F3EE）兜住，和顶栏同色，看不出接缝。 */
+.chat-header, .nav-bar { padding-top: 12px; }
 
 /* 彻底关掉拼写检查的蓝色波浪线 */
 input, textarea { spellcheck: false; }

@@ -879,15 +879,17 @@ function buildMainSystemPrompt(hasImage) {
     '【铁律，每条回复必须照做】\n' +
     '1. 你是朋友，不是老师不是专家，语气像微信里跟好朋友聊天\n' +
     '2. 三拍子结构，缺一不可：\n' +
-    '   ① 先接情绪（"这事儿听着是真闹心"、"换我我也懵"）\n' +
-    '   ② 反问一个具体问题摸清情况（"你们处多久了？"、"她原话咋说的？"）\n' +
-    '   ③ 只给一个明确立场（"要是我，我就直接问清楚"），不许列多个选项\n' +
+    '   ① 先接情绪：一句话，用你自己的话，不要套固定句式\n' +
+    '   ② 反问一个具体问题摸清情况：每轮换个角度问，不要老问同一个\n' +
+    '   ③ 只给一个明确立场：用「要是我，我就…」这种口吻，不许列多个选项\n' +
     '3. 严禁说教：不许出现"你应该""你可以""建议你"。换成"要是我我就…""我哥们儿之前…"\n' +
     '4. 口语化：多用"嗯""啊""咋""呗""哈哈"，允许句子不完整\n' +
     '5. 每次回复40到100字，不许长篇大论，不许用序号分点\n' +
     '6. 反对PUA/操控/物化，引导平等健康的关系\n' +
     '7. 没把握的事说"可能""我猜"，不把话说死\n' +
-    (profile.dimensions ? '8. 这用户的性格特征：' + JSON.stringify(profile.dimensions) + '\n' : '');
+    '8. 绝对不许重复：不许再说上一轮说过的句子，不许再问已经问过的问题。' +
+    '用户已经交代过的事（比如"我喜欢一个女孩"），不要再问一遍，接着往下聊\n' +
+    (profile.dimensions ? '9. 这用户的性格特征：' + JSON.stringify(profile.dimensions) + '\n' : '');
   if (hasImage) {
     p += '\n【本次用户发来了一张图片，多半是聊天截图/朋友圈/对方资料】\n' +
       '仔细看清图里的文字、对话顺序、时间和语气，再开口。像朋友凑过来一起看手机那样，' +
@@ -901,6 +903,29 @@ function buildMainSystemPrompt(hasImage) {
     if (window.ZYProfile) p += window.ZYProfile.getNote();
   } catch (e) {}
   return p;
+}
+
+// v2.9.8 带上最近 12 条历史，否则模型每轮都当新对话，只会重复同一句话
+function buildMessages(systemPrompt, userText, userContent, hasImage) {
+  const msgs = [{ role: 'system', content: systemPrompt }];
+  let history = [];
+  try { history = chatStorage.getHistory(12) || []; } catch (e) { history = []; }
+  history.forEach(function (h) {
+    if (!h || !h.content) return;
+    if (h.type === 'system') return;
+    msgs.push({
+      role: h.role === 'assistant' ? 'assistant' : 'user',
+      content: String(h.content).slice(0, 1200)
+    });
+  });
+  // 当前这条已经在历史里了（sendMessage 先存后调），有图时换成图文结构；不在就补上
+  const last = msgs[msgs.length - 1];
+  if (last && last.role === 'user' && last.content === userText) {
+    if (hasImage) msgs[msgs.length - 1] = { role: 'user', content: userContent };
+  } else {
+    msgs.push({ role: 'user', content: userContent });
+  }
+  return msgs;
 }
 
 async function callAI(userText, imageDataUrl) {
@@ -932,11 +957,8 @@ async function callAI(userText, imageDataUrl) {
       },
       body: JSON.stringify({
         model: model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent }
-        ],
-        temperature: 0.7,
+        messages: buildMessages(systemPrompt, userText, userContent, hasImage),
+        temperature: 0.85,
         max_tokens: 600
       })
     });
