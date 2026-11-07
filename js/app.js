@@ -1294,30 +1294,35 @@ function refreshProcenter() {
 }
 
 // ============ Member ============
+// v2.9.9 内测期：会员页不出现价格和支付按钮，避免"点不动的空壳"
+// 有真实会员（isVip）才展示定价和续费；否则一律按免费内测展示
 function refreshMember() {
   const membership = wx.getStorageSync('membership') || {};
-  const registerAt = wx.getStorageSync('registerAt') || Date.now();
-  const elapsed = (Date.now() - registerAt) / (24 * 3600 * 1000);
-  
-  let phase = '试用期';
-  let days = '';
-  
-  if (membership.isVip && membership.vipEnd > Date.now()) {
-    phase = '会员';
-    days = '到期：' + new Date(membership.vipEnd).toLocaleDateString();
-  } else if (elapsed < 30) {
-    phase = '试用期';
-    days = '剩余 ' + Math.ceil(30 - elapsed) + ' 天';
-  } else if (elapsed < 60) {
-    phase = '第2月特惠';
-    days = '9.9元开通';
+  const isVip = !!(membership.isVip && membership.vipEnd > Date.now());
+
+  const phaseEl  = document.getElementById('member-phase');
+  const daysEl   = document.getElementById('member-days');
+  const plansEl  = document.getElementById('member-plans');
+  const redeemEl = document.getElementById('member-redeem');
+  const payBtn   = document.getElementById('member-pay-btn');
+
+  if (isVip) {
+    if (phaseEl)  phaseEl.textContent = '你已是知隅会员';
+    if (daysEl)   daysEl.textContent  = '有效期至 ' + new Date(membership.vipEnd).toLocaleDateString();
+    if (plansEl)  plansEl.style.display  = '';
+    if (redeemEl) redeemEl.style.display = '';
+    if (payBtn) { payBtn.textContent = '续费会员'; payBtn.setAttribute('onclick', 'payMember()'); }
   } else {
-    phase = '已过期';
-    days = '请续费';
+    if (phaseEl)  phaseEl.textContent = '内测期间 · 全部功能免费';
+    if (daysEl)   daysEl.textContent  = '现在所有工具都能免费用，不需要开通任何东西';
+    if (plansEl)  plansEl.style.display  = 'none';
+    if (redeemEl) redeemEl.style.display = 'none';
+    if (payBtn) { payBtn.textContent = '开始使用'; payBtn.setAttribute('onclick', 'startUsing()'); }
   }
-  
-  document.getElementById('member-phase').textContent = phase;
-  document.getElementById('member-days').textContent = days;
+}
+
+function startUsing() {
+  goTo('chat');
 }
 
 function selectPlan(planId) {
