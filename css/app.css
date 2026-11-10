@@ -2701,3 +2701,53 @@ html, body { background: #F6F3EE !important; }
   color: var(--zy-text-sub);
   letter-spacing: .3px;
 }
+
+/* ============================================================
+   v2.9.13 聊天布局修正
+   问题：气泡被双重百分比收缩——.message-body 72% × .message-bubble 70%，
+   实际只有屏宽约 50%，每行只放得下 7 个字，看着两边都挤在中间，
+   不像正常微信聊天群。而且 .chat-messages(16px) 和 .message(16px)
+   两层内边距叠加，左右各吃掉 32px。
+   修法：气泡上限改成相对 message-body 的 100%，body 放宽到 78%，
+   两层内边距各减一半，头像 40px。
+   ============================================================ */
+.chat-messages { padding: 16px 8px !important; }
+
+.message {
+  padding: 0 8px !important;
+  margin: 14px 0 !important;
+}
+
+.message-body {
+  max-width: 78% !important;
+  margin: 0 8px !important;
+  min-width: 0;
+}
+
+.message-bubble {
+  max-width: 100% !important;
+  padding: 12px 14px !important;
+  font-size: 15px !important;
+  line-height: 1.62 !important;
+  border-radius: 4px 16px 16px 16px !important;
+}
+
+.message.user .message-bubble {
+  border-radius: 16px 4px 16px 16px !important;
+}
+
+.message-avatar {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.message-name {
+  margin: 0 0 5px 2px !important;
+}
+
+.message.user .message-name {
+  margin: 0 2px 5px 0 !important;
+}
+
+.message-bubble p { margin: 0 0 8px; }
+.message-bubble p:last-child { margin-bottom: 0; }

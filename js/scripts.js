@@ -13,7 +13,10 @@
 
   // 同义词扩展：搜"不回"也能搜到"已读""不理""消失"
   var SYN = [
-    ['不回', '没回', '已读', '不理', '消失', '没消息', '不回消息', '不回复'],
+    ['不回', '没回', '已读', '不理', '消失', '没消息', '不回消息', '不回复', '断联', '没动静', '石沉大海'],
+    // v2.9.13: 补一组「消息/回复」相关。以前搜"她不回我消息"只能命中含"不回"的，
+    // 含"回复""回得慢""聊着聊着"的场景全漏掉，看着像搜不到东西。
+    ['回消息', '回复', '回得慢', '秒回', '聊着聊着', '不回我', '半天没'],
     ['冷', '冷淡', '敷衍', '没兴趣', '疏远'],
     ['约', '见面', '出来', '去哪', '约她'],
     ['表白', '喜欢', '确认关系', '在一起', '心意'],
@@ -23,6 +26,8 @@
     ['家长', '父母', '爸妈', '见家长', '彩礼', '她妈', '她爸'],
     ['相亲', '介绍', '媒人', '安排'],
     ['前任', '复合', '挽回', '回来'],
+    // v2.9.13: 「她说做朋友」这种整句以前只命中 1 个词，补一组朋友相关的
+    ['做朋友', '当朋友', '只是朋友', '朋友', '合适的人'],
     ['异地', '距离', '远', '见不到'],
     ['拒绝', '不合适', '婉拒', '说不', '不想'],
     ['礼物', '送什么', '送礼', '送东西'],
@@ -170,9 +175,20 @@
     });
   }
 
+  // v2.9.13: 相关度打分。整串命中最重，第一个扩展词次之，其余按词算。
+  function scoreOf(x, kw, kws) {
+    var h = hayOf(x), s = 0;
+    if (kw && h.indexOf(kw) >= 0) s += 100;
+    for (var i = 0; i < kws.length; i++) {
+      if (kws[i] && h.indexOf(kws[i]) >= 0) s += (i === 0 ? 30 : 6);
+    }
+    return s;
+  }
+
   function apply() {
     var kw = (state.keyword || '').trim();
     var cat = state.cat;
+    var kws = kw ? expand(kw) : [];
     var out = match(kw, cat);
 
     // 整串搜不到，按片段模糊找一次
@@ -183,6 +199,23 @@
       out = match(kw, '全部');
       if (!out.length && kw.length >= 3) out = fuzzy(kw, '全部');
       if (out.length) { state.cat = '全部'; renderCats(); }
+    }
+
+    // v2.9.13: 结果太少时补一轮模糊匹配。
+    // 以前只有「一条都没搜到」才模糊找，结果搜长句只出 5、6 条，
+    // 用户以为库里没东西。现在只要少于 6 条就补，宁多勿少。
+    if (kw && out.length < 6) {
+      var extra = fuzzy(kw, state.cat);
+      for (var e = 0; e < extra.length; e++) {
+        if (out.indexOf(extra[e]) < 0) out.push(extra[e]);
+      }
+    }
+
+    // v2.9.13: 按相关度重排，别让最贴的那条沉在下面
+    if (kw && out.length > 1) {
+      var scored = out.map(function (x, i) { return { x: x, s: scoreOf(x, kw, kws), i: i }; });
+      scored.sort(function (a, b) { return (b.s - a.s) || (a.i - b.i); });
+      out = scored.map(function (o) { return o.x; });
     }
 
     state.filtered = out;
@@ -240,6 +273,17 @@
     var clearBtn = document.getElementById('sc-clear');
     if (clearBtn) clearBtn.classList.toggle('hidden', !state.keyword);
     apply();
+    // v2.9.13: 每次改关键词都回到列表顶部，不然结果在屏幕外，看着像没搜
+    var wrap = document.querySelector('#page-scripts .page-content');
+    if (wrap) wrap.scrollTop = 0;
+  };
+
+  // v2.9.13: 点搜索框左边那个「搜」字也能搜。
+  // 以前它只是个标签，用户按下去一点反应没有，就以为搜索坏了。
+  window.scFocus = function () {
+    var input = document.getElementById('sc-input');
+    if (input) { input.focus(); input.click(); }
+    window.scSearch(input ? input.value : '');
   };
 
   window.scClear = function () {
